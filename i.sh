@@ -1089,6 +1089,29 @@ i_fdm() {
   apt-get -y install fdm msmtp mpack heirloom-mailx
 
   #ask_settings_fdm pop3_server pop3_port pop3_login pop3_passwd
+  [ -f /home/xbmc/scripts/control-reply.sh ] || cat > /home/xbmc/scripts/control-reply.sh << EOF
+#! /bin/sh
+ 
+if [ "$#" -ne 1 ] ; then
+  exit 1
+fi
+
+from=`sed -e "/^.$/q" | grep "^From:" | sed -n -e "s/^From: [^<]*<\(.*\)>$/\1/p;s/^From: \([^<>]\+\)$/\1/p" | head -n 1`
+ 
+if [ -n "\${from}" ] ; then
+  echo ${from} | grep -qi "^${smtp_mail}"
+  if [ $? -ne 0 ] ; then
+    from="${smtp_mail},\${from}"
+  fi
+else
+  from="${smtp_mail}"
+fi
+ 
+eval "($1) | mailx -s \"Operation result\" \"\${from}\""
+EOF
+
+  chmod 600 /home/xbmc/scripts/control-reply.sh
+  chown xbmc:xbmc /home/xbmc/scripts/control-reply.sh
 
   [ -f /home/xbmc/.fdm.conf ] || cat > /home/xbmc/.fdm.conf << EOF
 set maximum-size      10M
@@ -1105,6 +1128,9 @@ action "inbox" maildir "%h/Mail/INBOX"
 action "rtorrent-add" pipe "munpack -f -q -C ${rtorrent_data}/_control/ ; for i in ${rtorrent_data}/_control/*.torrent ; do chmod a+r \$i ; done"
 action "rtorrent-add-audio" pipe "munpack -f -q -C ${rtorrent_data}/_control/audio/ ; for i in ${rtorrent_data}/_control/audio/*.torrent ; do chmod a+r \$i ; done"
 action "rtorrent-add-video" pipe "munpack -f -q -C ${rtorrent_data}/_control/video/ ; for i in ${rtorrent_data}/_control/video/*.torrent ; do chmod a+r \$i ; done"
+action "rtorrent-list" pipe "/home/xbmc/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
+action "rtorrent-alt-on" exec "transmission-remote --alt-speed"
+action "rtorrent-alt-off" exec "transmission-remote --no-alt-speed"
 
 account "xbmc"
         pop3s
@@ -1118,6 +1144,9 @@ account "xbmc"
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s*\$" in headers actions { "rtorrent-add" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+audio\\\\s*\$" in headers actions { "rtorrent-add-audio" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+video\\\\s*\$" in headers actions { "rtorrent-add-video" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+list\\s*$" in headers actions { "rtorrent-list" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+on\\s*$" in headers actions { "rtorrent-alt-on" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+off\\s*$" in headers actions { "rtorrent-alt-off" "drop" }
 match all action "keep"
 EOF
 
