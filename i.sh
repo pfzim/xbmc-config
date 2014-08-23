@@ -1163,6 +1163,15 @@ EOF
 
   #echo "\nrm -f /home/xbmc/.fdm.lock" >> /etc/rc.local
   sed -i "s/^\\s*exit\\s*0\\s*\$/\\[ -f \\/home\\/xbmc\\/\\.fdm\\.lock \\] \\&\\& rm -f \\/home\\/xbmc\\/\\.fdm\\.lock\\n\\nexit 0\\n/" /etc/rc.local
+
+  [ -f /home/xbmc/.mailrc ] || cat > /home/xbmc/.mailrc << EOF
+set sendmail="/usr/bin/msmtp"
+set from="${smtp_mail}"
+#set message-sendmail-extra-arguments="-v"
+EOF
+
+  chmod 600 /home/xbmc/.mailrc
+  chown xbmc:xbmc /home/xbmc/.mailrc
 }
 
 # configure xorg
