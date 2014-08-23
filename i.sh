@@ -5,7 +5,7 @@
 # chmod a+rx i.sh
 # ./i.sh 2>&1 | tee i.log
 
-back_title="XBMC 12.2 post installation configuration script v0.08.21 (c) pfzim"
+back_title="XBMC 12.2 post installation configuration script v0.08.22 (c) pfzim"
 fg_title="XBMC configuration"
 DIALOG=whiptail
 idir=$(pwd)
@@ -1040,7 +1040,7 @@ pop3_login=""
 pop3_passwd=""
 
 smtp_server="smtp.yandex.ru"
-smtp_port="465"
+smtp_port="587"
 smtp_mail="username@yandex.ru"
 smtp_login=""
 smtp_passwd=""
@@ -1086,7 +1086,7 @@ i_fdm_pre() {
 }
 
 i_fdm() {
-  apt-get -y install fdm msmtp mpack
+  apt-get -y install fdm msmtp mpack heirloom-mailx
 
   #ask_settings_fdm pop3_server pop3_port pop3_login pop3_passwd
 
@@ -1141,6 +1141,7 @@ defaults
 syslog LOG_MAIL
 
 tls on
+tls_starttls on
 tls_certcheck off
 #tls_trust_file /etc/ssl/certs/ca-certificates.crt
 #logfile ~/.msmtp.log
