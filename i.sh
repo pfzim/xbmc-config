@@ -1,11 +1,14 @@
 #!/bin/sh
 
-# BOOT in recovery mode and RUN:
-# wget http://hencvik.googlecode.com/files/i.sh
+# Boot XBMCbuntu, CTRL+F1, login and run:
+# wget https://raw.githubusercontent.com/pfzim/xbmc-config/master/i.sh
 # chmod a+rx i.sh
-# ./i.sh 2>&1 | tee i.log
+# sudo ./i.sh
 
-back_title="XBMC 12.2 post installation configuration script v0.08.22 (c) pfzim"
+# --wget http://hencvik.googlecode.com/files/i.sh
+# --./i.sh 2>&1 | tee i.log
+
+back_title="XBMC 13.2 post installation configuration script v0.08.22 (c) pfzim"
 fg_title="XBMC configuration"
 DIALOG=whiptail
 idir=$(pwd)
