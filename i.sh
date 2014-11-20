@@ -1095,22 +1095,23 @@ i_fdm() {
   [ -f /home/xbmc/scripts/control-reply.sh ] || cat > /home/xbmc/scripts/control-reply.sh << EOF
 #! /bin/sh
  
-if [ "$#" -ne 1 ] ; then
+if [ "\$#" -ne 1 ] ; then
   exit 1
 fi
 
-from=`sed -e "/^.$/q" | grep "^From:" | sed -n -e "s/^From: [^<]*<\(.*\)>$/\1/p;s/^From: \([^<>]\+\)$/\1/p" | head -n 1`
+from=`sed -e "/^.\$/q" | grep "^From:" | sed -n -e "s/^From: [^<]*<\(.*\)>$/\1/p;s/^From: \([^<>]\+\)$/\1/p" | head -n 1`
+cc=
  
 if [ -n "\${from}" ] ; then
-  echo ${from} | grep -qi "^${smtp_mail}"
+  echo \${from} | grep -qi "^${smtp_mail}"
   if [ $? -ne 0 ] ; then
-    from="${smtp_mail},\${from}"
+    cc="-b \"${smtp_mail}\""
   fi
 else
   from="${smtp_mail}"
 fi
  
-eval "($1) | mailx -s \"Operation result\" \"\${from}\""
+eval "(\$1) | mailx -s \"Operation result\"\${cc} \"\${from}\""
 EOF
 
   chmod 600 /home/xbmc/scripts/control-reply.sh
