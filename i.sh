@@ -1093,15 +1093,15 @@ i_fdm() {
 
   #ask_settings_fdm pop3_server pop3_port pop3_login pop3_passwd
   [ -f /home/xbmc/scripts/control-reply.sh ] || cat > /home/xbmc/scripts/control-reply.sh << EOF
-#! /bin/sh
- 
+#!/bin/sh
+
 if [ "\$#" -ne 1 ] ; then
   exit 1
 fi
 
-from=`sed -e "/^.\$/q" | grep "^From:" | sed -n -e "s/^From: [^<]*<\(.*\)>$/\1/p;s/^From: \([^<>]\+\)$/\1/p" | head -n 1`
+from=\`sed -e "/^.\\\$/q" | grep "^From:" | sed -n -e "s/^From: [^<]*<\(.*\)>\\\$/\1/p;s/^From: \([^<>]\+\)\\\$/\1/p" | head -n 1\`
 cc=
- 
+
 if [ -n "\${from}" ] ; then
   echo \${from} | grep -qi "^${smtp_mail}"
   if [ $? -ne 0 ] ; then
@@ -1110,7 +1110,7 @@ if [ -n "\${from}" ] ; then
 else
   from="${smtp_mail}"
 fi
- 
+
 eval "(\$1) | mailx -s \"Operation result\"\${cc} \"\${from}\""
 EOF
 
@@ -1129,9 +1129,9 @@ action "drop" drop
 action "keep" keep
 
 action "inbox" maildir "%h/Mail/INBOX"
-action "rtorrent-add" pipe "munpack -f -q -C ${rtorrent_data}/_control/ ; for i in ${rtorrent_data}/_control/*.torrent ; do chmod a+r \$i ; done"
-action "rtorrent-add-audio" pipe "munpack -f -q -C ${rtorrent_data}/_control/audio/ ; for i in ${rtorrent_data}/_control/audio/*.torrent ; do chmod a+r \$i ; done"
-action "rtorrent-add-video" pipe "munpack -f -q -C ${rtorrent_data}/_control/video/ ; for i in ${rtorrent_data}/_control/video/*.torrent ; do chmod a+r \$i ; done"
+action "rtorrent-add" pipe "munpack -f -q -C ${rtorrent_data}/_control/ ; for i in ${rtorrent_data}/_control/*.torrent ; do chmod a+r \\\$i ; done"
+action "rtorrent-add-audio" pipe "munpack -f -q -C ${rtorrent_data}/_control/audio/ ; for i in ${rtorrent_data}/_control/audio/*.torrent ; do chmod a+r \\\$i ; done"
+action "rtorrent-add-video" pipe "munpack -f -q -C ${rtorrent_data}/_control/video/ ; for i in ${rtorrent_data}/_control/video/*.torrent ; do chmod a+r \\\$i ; done"
 action "rtorrent-list" pipe "/home/xbmc/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
 action "rtorrent-alt-on" exec "transmission-remote --alt-speed"
 action "rtorrent-alt-off" exec "transmission-remote --no-alt-speed"
@@ -1148,9 +1148,9 @@ account "xbmc"
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s*\$" in headers actions { "rtorrent-add" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+audio\\\\s*\$" in headers actions { "rtorrent-add-audio" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+video\\\\s*\$" in headers actions { "rtorrent-add-video" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+list\\s*$" in headers actions { "rtorrent-list" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+on\\s*$" in headers actions { "rtorrent-alt-on" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+off\\s*$" in headers actions { "rtorrent-alt-off" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+list\\s*\$" in headers actions { "rtorrent-list" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+on\\s*\$" in headers actions { "rtorrent-alt-on" "drop" }
+match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+off\\s*\$" in headers actions { "rtorrent-alt-off" "drop" }
 match all action "keep"
 EOF
 
