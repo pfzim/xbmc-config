@@ -156,11 +156,12 @@ c_ddns_pre() {
 }
 
 c_ddns() {
-  pacman -S --noconfirm --needed wget
+  pacman -S --noconfirm --needed cronie curl
 
   crontab -u $username -l > .crontab
   cat >> .crontab << EOF
-*/15 * * * * wget --quiet --delete-after --auth-no-challenge --user="${noip_user}" --password="${noip_passwd}" --user-agent="wget based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}"
+*/15 * * * * curl --silent --basic --user "${noip_user}:${noip_passwd}" --user-agent "curl based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}" --output /dev/null
+# */15 * * * * wget --quiet --delete-after --auth-no-challenge --user="${noip_user}" --password="${noip_passwd}" --user-agent="wget based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}"
 EOF
   crontab -u $username .crontab
 }
@@ -362,7 +363,7 @@ i_cyrillic() {
 
   sed -i -e "/^\\s*KEYMAP\\s*=/ s/^/#/" $config
   sed -i -e "/^\\s*FONT\\s*=/ s/^/#/" $config
-  echo -ne "\nKEYMAP=ru\nFONT=Cyr_a8x16\n" >> $config
+  echo -ne "\nKEYMAP=ru\nFONT=pancyrillic.f16\n" >> $config
 }
 
 
@@ -527,12 +528,12 @@ account "xbmc"
         new-only
         cache    "%h/Mail/cache"
 
-match "^Subject:\\s+control:\\s+torrent\\s+add\\s*\$" in headers actions { "torrent-add" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+add\\s+audio\\s*\$" in headers actions { "torrent-add-audio" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+add\\s+video\\s*\$" in headers actions { "torrent-add-video" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+list\\s*\$" in headers actions { "torrent-list" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+on\\s*\$" in headers actions { "torrent-alt-on" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+off\\s*\$" in headers actions { "torrent-alt-off" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s*\$" in headers actions { "torrent-add" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+audio\\\\s*\$" in headers actions { "torrent-add-audio" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+video\\\\s*\$" in headers actions { "torrent-add-video" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+list\\\\s*\$" in headers actions { "torrent-list" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+on\\\\s*\$" in headers actions { "torrent-alt-on" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+off\\\\s*\$" in headers actions { "torrent-alt-off" "drop" }
 match all action "keep"
 EOF
 
@@ -623,16 +624,22 @@ Section "Monitor"
   Identifier    "Monitor0"
   VendorName     "Unknown"
   ModelName      "TSB TOSHIBA-TV"
+
   #HorizSync       15.0 - 65.0
   #VertRefresh     49.0 - 76.0
   #Option         "DPMS"
-  Option        "UseEdidDpi" "false"
-  Option        "DPI"        "127x127"
   #Option        "RenderAccel" "True"
   #Option        "NoRenderExtension" "False"
-  Option        "NoFlip" "False"
   #Option        "NvAGP" "1"
+
+  Option        "UseEdidDpi" "false"
+  Option        "DPI"        "127x127"
+  Option        "NoFlip" "False"
   Option        "ExactModeTimingsDVI" "True"
+
+  Modeline  "1360x768_60.00" 85.500 1360 1424 1536 1792  768 771 777 795  +hsync +vsync
+
+
   # 1360x768 59.80 Hz (CVT) hsync: 47.72 kHz; pclk: 84.75 MHz
   #Modeline "1360x768_60.00"   84.75  1360 1432 1568 1776  768 771 781 798 -hsync +vsync
   # 1360x768 @ 50.00 Hz (GTF) hsync: 39.55 kHz; pclk: 69.61 MHz
@@ -640,11 +647,10 @@ Section "Monitor"
   # 1360x768 @ 60.00 Hz (GTF) hsync: 47.70 kHz; pclk: 84.72 MHz
   #Modeline "1360x768_60.00"  84.72  1360 1424 1568 1776  768 769 772 795  -HSync +Vsync
 
-  Modeline  "1360x768_60.00" 85.500 1360 1424 1536 1792  768 771 777 795  +hsync +vsync
-
   #SubSection "Display"
   #  Modes                "1360x768_60.00"
   #EndSubSection
+
 EndSection
 
 #Section "Device"
@@ -806,16 +812,30 @@ i_sshd() {
 
 i_motion() {
   pacman -S --noconfirm --needed motion gstreamer
-  #apt-get -y install v4l2loopback-dkms
+  pacman -U v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
 
   config="/etc/motion/motion.conf"
+
+  if [ ! -d "/home/${username}/motion" ] ; then
+    mkdir -p "/home/${username}/motion"
+    chmod a+rwx "/home/${username}/motion"
+  fi
+
+  [ -f "/etc/modprobe.d/v4l2loopback.conf" ] || cat > /etc/modprobe.d/v4l2loopback.conf << EOF
+options v4l2loopback video_nr=9
+EOF
 
   #sed -i "s/^\(\\s*start_motion_daemon\\s*=\\s*\)no/\\1yes/" $config
 
   sed -i "/^\\s*videodevice\\s*/ s/^/#/" $config
   sed -i "/^\\s*width\\s*/ s/^/#/" $config
   sed -i "/^\\s*height\\s*/ s/^/#" $config
-  echo -ne "\nvideodevice \/dev\/video9\n" >> $config
+  sed -i "/^\\s*target_dir\\s*/ s/^/#" $config
+  sed -i "/^\\s*movie_filename\\s*/ s/^/#" $config
+
+  echo -ne "\ntarget_dir /home/${username}/motion\n" >> $config
+  echo -ne "movie_filename backup-%Y-%m-%d-%H%M%S-%t-%v\n" >> $config
+  echo -ne "videodevice /dev/video9\n" >> $config
 
   #wget -O v4l2loopback.zip https://github.com/umlaeute/v4l2loopback/archive/master.zip
   #unzip v4l2loopback.zip
