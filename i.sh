@@ -217,7 +217,7 @@ i_plugins() {
 ##############################
 
 torrent_media="/mnt/data/torrents"
-torrent_sess="/home/${username}/transmission"
+torrent_sess="/mnt/data/transmission"
 
 i_tbt_pre() {
   fg_title="transmission-daemon settings"
@@ -470,7 +470,7 @@ i_fdm_pre() {
 
 i_fdm() {
   pacman -S --noconfirm --needed fdm msmtp s-nail
-  # mpack
+  pacman -U --needed mpack-1.6.4-x86_64.pkg.tar.xz
 
   if [ ! -f "/home/${username}/scripts/control-reply.sh" ] ; then
     cat > "/home/${username}/scripts/control-reply.sh" << EOF
@@ -550,7 +550,7 @@ EOF
   if ! crontab -u $username -l | grep -qFe "fdm -q fetch" ; then
     crontab -u $username -l > .crontab
     cat >> .crontab << EOF
-*/15 * * * * rm -f /home/${username}/.fdm.lock; fdm -q fetch
+*/15 * * * * rm -f "/home/${username}/.fdm.lock"; fdm -q fetch
 EOF
     crontab -u $username .crontab
   fi
@@ -812,28 +812,49 @@ i_sshd() {
 
 i_motion() {
   pacman -S --noconfirm --needed motion gstreamer
-  pacman -U v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
+  pacman -U --needed v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
 
   config="/etc/motion/motion.conf"
 
-  if [ ! -d "/home/${username}/motion" ] ; then
-    mkdir -p "/home/${username}/motion"
-    chmod a+rwx "/home/${username}/motion"
+  if [ ! -d "/var/motion" ] ; then
+    mkdir -p /var/motion
+    chown motion:motion /var/motion
+    chmod a+rwx /var/motion
   fi
 
   [ -f "/etc/modprobe.d/v4l2loopback.conf" ] || cat > /etc/modprobe.d/v4l2loopback.conf << EOF
 options v4l2loopback video_nr=9
 EOF
 
+  [ -f "/etc/modules-load.d/v4l2loopback.conf" ] || cat > /etc/modules-load.d/v4l2loopback.conf << EOF
+v4l2loopback
+EOF
+
+  [ -f "/etc/systemd/system/gst-video9.service" ] || cat > /etc/systemd/system/gst-video9.service << EOF
+[Unit]
+Description=GST Loopback video9
+After=local-fs.target
+Before=motion.service
+
+[Service]
+User=motion
+ExecStart=/usr/bin/gst-launch-1.0 v4l2src device=/dev/video0 ! videorate ! v4l2sink device=/dev/video9
+Type=simple
+StandardError=null
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
   #sed -i "s/^\(\\s*start_motion_daemon\\s*=\\s*\)no/\\1yes/" $config
 
   sed -i "/^\\s*videodevice\\s*/ s/^/#/" $config
   sed -i "/^\\s*width\\s*/ s/^/#/" $config
-  sed -i "/^\\s*height\\s*/ s/^/#" $config
-  sed -i "/^\\s*target_dir\\s*/ s/^/#" $config
-  sed -i "/^\\s*movie_filename\\s*/ s/^/#" $config
+  sed -i "/^\\s*height\\s*/ s/^/#/" $config
+  sed -i "/^\\s*target_dir\\s*/ s/^/#/" $config
+  sed -i "/^\\s*movie_filename\\s*/ s/^/#/" $config
 
-  echo -ne "\ntarget_dir /home/${username}/motion\n" >> $config
+  echo -ne "\ntarget_dir /var/motion\n" >> $config
   echo -ne "movie_filename backup-%Y-%m-%d-%H%M%S-%t-%v\n" >> $config
   echo -ne "videodevice /dev/video9\n" >> $config
 
@@ -846,6 +867,9 @@ EOF
   #cat /etc/modules | grep -q -e "^\\s*v4l2loopback" || echo -e "\nv4l2loopback" >> /etc/modules
   #cat /etc/modprobe.d/v4l2loopback.conf | grep -q -e "^\\s*options\\s*v4l2loopback" || echo "options v4l2loopback video_nr=9" >> /etc/modprobe.d/v4l2loopback.conf
   #cat /etc/rc.local | grep -q -e "^\\s*gst-launch" || sed -i "s/^\\s*exit\\s*0\\s*\$/gst-launch v4l2src device=\\/dev\\/video0 ! videorate ! v4l2sink device=\\/dev\\/video9>\\/dev\\/null 2>\\/dev\\/null \\&\\n\\nexit 0\\n/" /etc/rc.local
+
+  systemctl enable gst-video9.service
+  systemctl start gst-video9.service
 
   systemctl enable motion
   systemctl start motion
