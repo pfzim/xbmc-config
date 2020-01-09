@@ -353,6 +353,99 @@ EOF
 
 c_bluez() {
   pacman -S --noconfirm --needed bluez bluez-utils
+  #modprobe hidp
+  #cat /etc/modules | grep -q -e "^\\s*hidp\\s*\$" || echo "hidp" >> /etc/modules
+  #/etc/init.d/bluetooth restart
+
+  #hci_device="hci0"
+
+  while :
+  do
+
+    list_items=$(bluetoothctl list | grep -e "^Controller\\s*\([A-F0-9]\{2\}:\)\{5\}[A-F0-9]\{2\}\\s" | sed -e "s/^Controller\\s*\(\([A-F0-9]\{2\}:\)\{5\}[A-F0-9]\{2\}\)\\s.*\$/\\1/" |
+      (
+        n=1
+        while read line
+        do
+          echo "\"${line}\" \"Bluetooth interface ${n}\""
+          n=$((n+1))
+        done
+        echo "rescan \"Scan again for bluetooth adapters...\""
+      )
+    )
+
+    if [ -z "${list_items}" ] ; then
+      break
+    fi
+
+    tempfile=`mktemp 2>/dev/null` || tempfile=/tmp/test$$
+    #trap "rm -f $tempfile" 0 1 2 5 15
+
+    eval ${DIALOG} --backtitle \"${back_title}\" --clear --title \"Bluetooth HID device configuration\" --menu \"Select bluetooth inteface\" 20 75 13 ${list_items} 2>$tempfile
+
+    if [ $? -ne 0 ] ; then
+      rm -f $tempfile
+      break
+    fi
+
+    hci_device=$(cat $tempfile)
+    rm -f $tempfile
+
+    if [ "${hci_device}" != "rescan" ] ; then
+      #cat >> /var/lib/bluetooth/xx:xx:xx:xx:xx:xx/config << EOF
+      #mode connectable
+      #modeon connectable
+      #discovto 0
+      #pairto 0
+      #EOF
+
+      bluetoothctl -- select ${hci_device}
+      bluetoothctl power on
+
+      #${DIALOG} --backtitle "${back_title}" --clear --title "XBMC configuration" --msgbox "Initialise pairing mode on connected device and press Enter..." 10 75
+      a_msgbox "Initialise pairing mode on connected device and press Enter..."
+      #read -p "Initialise pairing mode on connected device and press Enter..." result
+      echo "\n\nScanning for bluetooth devices...\n"
+
+      { echo -e "scan on"
+        sleep 5
+        echo -e "quit"
+      } | bluetoothctl
+
+      bluetoothctl agent on
+
+      list_items=$(bluetoothctl devices | sed -e "s/^Device\\s\+//" |
+        (
+          n=1
+          while read line
+          do
+            #echo "${n} \"${line}\""
+            echo $line | sed -e "s/^\\s*\([^ ]\+\)\\s\+\(.*\)\$/\"\\1\" \"\\2\"/"
+            n=$((n+1))
+          done
+        )
+      )
+
+      if [ -n "${list_items}" ] ; then
+
+        tempfile=`mktemp 2>/dev/null` || tempfile=/tmp/test$$
+
+        eval ${DIALOG} --backtitle \"${back_title}\" --clear --title \"Bluetooth HID device configuration\" --menu \"Select HID device\" 20 75 13 ${list_items} 2>$tempfile
+
+        if [ $? -eq 0 ] ; then
+          dev_addr=$(cat $tempfile)
+
+          if [ "${dev_addr}" != "rescan" ] ; then
+            bluetoothctl -- pair ${dev_addr}
+            bluetoothctl -- trust ${dev_addr}
+            bluetoothctl -- connect ${dev_addr}
+          fi
+        fi
+
+        rm -f $tempfile
+      fi
+    fi
+  done
 }
 
 # configure console
