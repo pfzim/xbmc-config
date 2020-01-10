@@ -359,6 +359,9 @@ c_bluez() {
 
   #hci_device="hci0"
 
+  systemctl enable bluetooth
+  systemctl start bluetooth
+
   while :
   do
 
