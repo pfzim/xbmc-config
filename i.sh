@@ -117,6 +117,269 @@ i_update() {
   pacman -Syu --noconfirm
 }
 
+# Configure wireless interface
+##############################
+
+ask_settings_ip() {
+	while :
+	do
+		a_input "Enter IP address [$1]:" $1
+		a_input "Enter network prefix [$2]:" $2
+		a_input "Enter gateway [$3]:" $3
+		a_input "Enter DNS1 [$4]:" $4
+		a_input "Enter DNS2 [$5]:" $5
+		a_input "Enter Metric [$6]:" $6
+
+		eval "a_yesno \"Network settings:\\n\\nIP: \$$1\nMask: \$$2\\nGateway: \$$3\\nDNS1: \$$4\\nDNS2: \$$5\\nMetric: \$$5\\n\\nEntered data correct?\" result"
+		if [ "$result" = "Y" -o "$result" = "y" ] ; then
+			break
+		fi
+	done
+}
+
+ask_settings_pass() {
+  while :
+  do
+    a_passwd "Enter password for wireless network:" p1
+
+    if [ "${#p1}" -ge 8 -a "${#p1}" -le 63 ] ; then
+      eval "$1=$p1"
+      break
+    else
+      a_msgbox "Passphrase must be 8..63 characters"
+    fi
+  done
+}
+
+c_net_pre() {
+	pacman -S --noconfirm --needed wpa_supplicant
+
+	systemctl start systemd-networkd
+
+	fg_title="Network configuration"
+
+	while :
+	do
+		# list_items=<interface>;net_type=<type>
+		list_items=$(networkctl --no-legend list | awk '{ print $2 ";net_type=" $3 }')
+
+		# list_menu=<interface> <type>
+		list_menu=$(echo "${list_items}" | sed -e "s/^\([^;]\+\);net_type=\(.*\)\$/\1 \2/")
+		#list_menu="${list_menu}\nrescan \"Find new networks...\""
+		#list_menu="${list_menu}\nback \"Back to previous menu\""
+
+		#echo $list_menu
+		#exit 0
+
+		if [ -z "${list_menu}" ] ; then
+			a_msgbox "ERROR: Something gone wrong..."
+			break
+		fi
+
+		tempfile=`mktemp 2>/dev/null` || tempfile=/tmp/test$$
+		#trap "rm -f $tempfile" 0 1 2 5 15
+
+		eval ${DIALOG} --backtitle \"${back_title}\" --clear --title \"Network configuration\" --menu \"Select network inteface\" 20 75 13 ${list_menu} 2>$tempfile
+
+		if [ $? -ne 0 ] ; then
+			rm -f $tempfile
+			break
+		fi
+
+		net_if=$(cat $tempfile)
+		rm -f $tempfile
+
+		if [ "${net_if}" = "rescan" ] ; then
+			continue
+		fi
+
+		if [ "${net_if}" = "exit" ] ; then
+			break
+		fi
+
+		eval $(echo "${list_items}" | grep "^${net_if};" | sed -e "s/^[^;]\+;//")
+
+		if [ "${net_type}" = "loopback" ] ; then
+			continue
+		fi
+
+		net_metric="20"
+
+		if [ "${net_type}" = "wlan" ] ; then
+			net_metric="50"
+
+			#ifconfig ${net_if} up
+
+			[ -f /etc/wpa_supplicant/wpa_supplicant.conf ] || cat > /etc/wpa_supplicant/wpa_supplicant.conf <<- EOF
+				ctrl_interface=/run/wpa_supplicant
+				#update_config=1
+			EOF
+
+			wpa_supplicant -B -i${net_if} -c/etc/wpa_supplicant/wpa_supplicant.conf
+			wpa_cli scan
+			echo "Wait for 3 seconds. Scanning WiFi..."
+			sleep 3
+
+			# list_items = <SSID>;ap_type=<WPA|WEP|OPEN>
+			list_items=$(wpa_cli scan_results | awk '{
+				if(NR > 2)
+				{
+					if(match($4, /WEP|WPA/, m))
+					{
+						print $5 ";ap_etype=" m[0];
+					}
+					else
+					{
+						print $5 ";ap_etype=OPEN";
+					}
+				}
+			}')
+
+			list_menu=$(echo "${list_items}" | sed -e "s/^\([^;]\+\);ap_etype=\(.*\)\$/\1 \2/")
+			#list_menu="${list_menu}\nrescan \"Find new networks...\""
+			#list_menu="${list_menu}\nback \"Back to previous menu\""
+
+			#echo $list_menu
+			#exit 0
+
+			#echo "*** RESULT ***"
+			#echo "${list_items}"
+			#echo "*** RESULT ***"
+			#echo "*** RESULT ***"
+			#echo "${list_menu}"
+			#echo "*** RESULT ***"
+
+			if [ -z "${list_items}" ] ; then
+				a_msgbox "No one WiFi networks found. Try scan again"
+				continue
+			fi
+
+			eval ${DIALOG} --backtitle \"${back_title}\" --clear --title \"Wireless network configuration\" --menu \"Select WiFi accesspoint\" 20 75 13 ${list_menu} 2>$tempfile
+
+			if [ $? -ne 0 ] ; then
+				rm -f $tempfile
+				continue
+			fi
+
+			sel_item=$(cat $tempfile)
+			rm -f $tempfile
+
+			if [ "${sel_item}" = "back" ] ; then
+				continue
+			fi
+
+			eval $(echo "${list_items}" | grep "^${sel_item};" | sed -e "s/^[^;]\+;//")
+
+			ap_essid=$sel_item
+
+			#echo "AP_INFO: ${ap_info}"
+			#echo "MAC: ${ap_mac}"
+			#echo "ESSID: ${ap_essid}"
+			#echo "ENC-TYPE: ${ap_etype}"
+
+			if [ "${ap_etype}" = "WPA" ]  ; then
+				ask_settings_pass ap_pass
+				wpa_cfg=$(wpa_passphrase "${ap_essid}" "${ap_pass}")
+			elif [ "${ap_etype}" = "WEP" ]  ; then
+				ask_settings_pass ap_pass
+				wpa_cfg=$(cat <<- END
+					ssid="${ap_essid}"
+					key_mgmt=NONE
+					wep_key0="${ap_pass}"
+					wep_tx_keyidx=0
+				END
+				)
+			else
+				wpa_cfg=$(cat <<- END
+					ssid="${ap_essid}"
+					key_mgmt=NONE
+				END
+				)
+			fi
+		fi
+
+		a_yesno "Use DHCP?" result "yes"
+		if [ "$result" = "Y" -o "$result" = "y" ] ; then
+
+			a_input "Enter Metric [${net_metric}]:" net_metric
+
+			net_cfg=$(cat <<- END
+				[Match]
+				Name=${net_if}
+
+				[Network]
+				DHCP=yes
+
+				[DHCPV4]
+				RouteMetric=${net_metric}
+			END
+			)
+		else
+			net_ip="192.168.1.100"
+			net_prefix="24"
+			net_gw="192.168.1.1"
+			net_dns1="192.168.1.1"
+			net_dns2=""
+
+			ask_settings_ip net_ip net_prefix net_gw net_dns1 net_dns2 net_metric
+
+			net_dns=""
+			if [ -n "${net_dns1}" -o -n "${net_dns2}" ] ; then
+				if [ -n "${net_dns1}" ] ; then
+					net_dns="DNS=${net_dns1}\n"
+				fi
+				if [ -n "${net_dns2}" ] ; then
+					net_dns="${net_dns}DNS=${net_dns2}\n"
+				fi
+			fi
+
+			net_cfg=$(cat <<- END
+				[Match]
+				Name=${net_if}
+
+				[Network]
+				${net_dns}
+
+				[Address]
+				Address=${net_ip}/${net_prefix}
+
+				[Route]
+				Gateway=${net_gw}
+				Destination=${net_mask}
+				Metric=${net_metric}
+			END
+			)
+		fi
+
+		if [ "${net_type}" = "wlan" ] ; then
+			a_yesno "/etc/wpa_supplicant/wpa_supplicant-${net_if}.conf:\n${wpa_cfg}\n\nSave this configuration?" result "yes"
+			if [ "$result" = "Y" -o "$result" = "y" ] ; then
+				echo -ne $wpa_cfg > "/etc/wpa_supplicant/wpa_supplicant-${net_if}.conf"
+
+				systemctl enable "wpa_supplicant@${net_if}"
+			fi
+		fi
+
+		a_yesno "/etc/systemd/network/90-network-${net_if}.network:\n${net_cfg}\n\nSave this configuration?" result "yes"
+		if [ "$result" = "Y" -o "$result" = "y" ] ; then
+			echo -ne $net_cfg > "/etc/systemd/network/90-network-${net_if}.network"
+
+			systemctl enable systemd-networkd
+			systemctl enable systemd-resolved
+		fi
+
+		a_yesno "${net_res}\nConnect NOW using this configuration?" result "yes"
+		if [ "$result" = "Y" -o "$result" = "y" ] ; then
+			if [ "${net_type}" = "wlan" ]  ; then
+				systemctl restart "wpa_supplicant@${net_if}"
+			fi
+
+			systemctl restart systemd-networkd
+			systemctl restart systemd-resolved
+		fi
+	done
+}
+
 # install NetworkManager
 ############################
 
@@ -412,8 +675,8 @@ c_bluez() {
 
       { echo -e "scan on"
         sleep 5
-        echo -e "quit"
-      } | bluetoothctl
+        echo -e "\nquit"
+      } | bluetoothctl > /dev/null
 
       bluetoothctl agent on
 
@@ -1063,6 +1326,7 @@ temp_select=`mktemp 2>/dev/null` || temp_select=/tmp/test$$
 ${DIALOG} --backtitle "${back_title}" --clear --title "${fg_title}" --separate-output --checklist "Select operations" 20 75 13 \
 c_tz "Set timezone to Europe/Moscow" off \
 i_update "Update Arch (pacman -Syu)" off \
+c_net "Configure network (systemd-networkd, wpa_supplicant)" off \
 i_nm "Install Network Manager" off \
 i_mc "Install Midnight commander and console tools" off \
 c_ddns "Configure DDNS no-ip.com script" off \
