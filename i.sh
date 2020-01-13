@@ -688,6 +688,7 @@ c_bluez() {
 			} | bluetoothctl > /dev/null
 
 			bluetoothctl agent on
+			bluetoothctl default-agent
 
 			list_items=$(bluetoothctl devices | sed -e "s/^Device\\s\+//" |
 				(
