@@ -93,7 +93,7 @@ a_passwd() {
 
 # ask user name for run xbmc
 c_user_pre() {
-	a_input "Enter user for run XBMC (must be exist):" username
+	a_input "Enter username for run XBMC (must be exist):" username
 
 	# useradd -m -G wheel,sudo xbmc
 	# useradd -m xbmc
@@ -422,10 +422,13 @@ c_ddns() {
 	pacman -S --noconfirm --needed cronie curl
 
 	crontab -u $username -l > .crontab
-	cat >> .crontab << EOF
-*/15 * * * * curl --silent --basic --user "${noip_user}:${noip_passwd}" --user-agent "curl based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}" --output /dev/null
-# */15 * * * * wget --quiet --delete-after --auth-no-challenge --user="${noip_user}" --password="${noip_passwd}" --user-agent="wget based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}"
-EOF
+	cat >> .crontab <<- EOF
+		# curl version
+		*/15 * * * * curl --silent --basic --user "${noip_user}:${noip_passwd}" --user-agent "curl based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}" --output /dev/null
+
+		# wget version
+		# */15 * * * * wget --quiet --delete-after --auth-no-challenge --user="${noip_user}" --password="${noip_passwd}" --user-agent="wget based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}"
+	EOF
 	crontab -u $username .crontab
 }
 
@@ -573,14 +576,14 @@ i_ffox() {
 	fi
 
 	if [ ! -f "/home/${username}/scripts/firefox.sh" ] ; then
-		cat > "/home/${username}/scripts/firefox.sh" << EOF
-#!/bin/sh
+		cat > "/home/${username}/scripts/firefox.sh" <<- EOF
+			#!/bin/sh
 
-${dm} &
-nm-applet --sm-disable &
-firefox
-killall -9 ${dm}
-EOF
+			#${dm} &
+			#nm-applet --sm-disable &
+			firefox
+			#killall -9 ${dm}
+		EOF
 
 		chmod a+rx "/home/${username}/scripts/firefox.sh"
 	fi
@@ -598,14 +601,14 @@ i_chrome() {
 	fi
 
 	if [ ! -f "/home/${username}/scripts/chrome.sh" ] ; then
-		cat > "/home/${username}/scripts/chrome.sh" << EOF
-#!/bin/sh
+		cat > "/home/${username}/scripts/chrome.sh" <<- EOF
+			#!/bin/sh
 
-${dm} &
-nm-applet --sm-disable &
-chromium-browser
-killall -9 ${dm}
-EOF
+			#${dm} &
+			#nm-applet --sm-disable &
+			chromium-browser
+			#killall -9 ${dm}
+		EOF
 
 		chmod a+rx "/home/${username}/scripts/chrome.sh"
 	fi
@@ -624,6 +627,12 @@ c_bluez() {
 
 	systemctl enable bluetooth
 	systemctl start bluetooth
+
+	config="/etc/bluetooth/main.conf"
+
+	sed -i -e "/^\\s*AutoEnable\\s*=/ s/^/#/" $config
+	sed -i -e "/^\\s*\\[Policy\\]/a AutoEnable=true" $config
+
 
 	while :
 	do
@@ -908,35 +917,35 @@ EOF
 
 	if ! crontab -u $username -l | grep -qFe "fdm -q fetch" ; then
 		crontab -u $username -l > .crontab
-		cat >> .crontab << EOF
-*/15 * * * * rm -f "/home/${username}/.fdm.lock"; fdm -q fetch
-EOF
+		cat >> .crontab <<- EOF
+			*/15 * * * * rm -f "/home/${username}/.fdm.lock"; fdm -q fetch
+		EOF
 		crontab -u $username .crontab
 	fi
 
 	if [ ! -f "/home/${username}/.msmtprc" ] ; then
-		cat > "/home/${username}/.msmtprc" << EOF
-defaults
+		cat > "/home/${username}/.msmtprc" <<- EOF
+			defaults
 
-syslog LOG_MAIL
+			syslog LOG_MAIL
 
-tls on
-tls_starttls on
-tls_certcheck off
-#tls_trust_file /etc/ssl/certs/ca-certificates.crt
-#logfile ~/.msmtp.log
+			tls on
+			tls_starttls on
+			tls_certcheck off
+			#tls_trust_file /etc/ssl/certs/ca-certificates.crt
+			#logfile ~/.msmtp.log
 
-account xbmc
-host ${smtp_server}
-port ${smtp_port}
-from ${smtp_mail}
-auth on
-user ${smtp_login}
-password ${smtp_passwd}
+			account xbmc
+			host ${smtp_server}
+			port ${smtp_port}
+			from ${smtp_mail}
+			auth on
+			user ${smtp_login}
+			password ${smtp_passwd}
 
-# Set a default account
-account default : xbmc
-EOF
+			# Set a default account
+			account default : xbmc
+		EOF
 
 		chmod 600 "/home/${username}/.msmtprc"
 		chown "${username}:${username}" "/home/${username}/.msmtprc"
@@ -946,11 +955,11 @@ EOF
 	#sed -i "s/^\\s*exit\\s*0\\s*\$/\\[ -f \\/home\\/${username}\\/\\.fdm\\.lock \\] \\&\\& rm -f \\/home\\/${username}\\/\\.fdm\\.lock\\n\\nexit 0\\n/" /etc/rc.local
 
 	if [ ! -f "/home/${username}/.mailrc" ] ; then
-		cat > "/home/${username}/.mailrc" << EOF
-set sendmail="/usr/bin/msmtp"
-set from="${smtp_mail}"
-#set message-sendmail-extra-arguments="-v"
-EOF
+		cat > "/home/${username}/.mailrc" <<- EOF
+			set sendmail="/usr/bin/msmtp"
+			set from="${smtp_mail}"
+			#set message-sendmail-extra-arguments="-v"
+		EOF
 
 		chmod 600 "/home/${username}/.mailrc"
 		chown "${username}:${username}" "/home/${username}/.mailrc"
@@ -1084,14 +1093,14 @@ i_burn() {
 	fi
 
 	if [ ! -f "/home/${username}/scripts/brasero.sh" ] ; then
-		cat > "/home/${username}/scripts/brasero.sh" << EOF
-#!/bin/sh
+		cat > "/home/${username}/scripts/brasero.sh" <<- EOF
+			#!/bin/sh
 
-${dm} &
-nm-applet --sm-disable &
-brasero
-killall -9 ${dm}
-EOF
+			#${dm} &
+			#nm-applet --sm-disable &
+			brasero
+			#killall -9 ${dm}
+		EOF
 
 		chmod a+rx "/home/${username}/scripts/brasero.sh"
 	fi
@@ -1110,34 +1119,34 @@ i_kodi() {
 	config="/home/${username}/.fluxbox/startup"
 
 	if [ ! -f $config ] ; then
-		cat > $config << EOF
-#!/bin/sh
-#
-# fluxbox startup-script:
-#
-# Lines starting with a '#' are ignored.
+		cat > $config <<- EOF
+			#!/bin/sh
+			#
+			# fluxbox startup-script:
+			#
+			# Lines starting with a '#' are ignored.
 
-# Change your keymap:
-xmodmap "$HOME/.Xmodmap"
+			# Change your keymap:
+			xmodmap "$HOME/.Xmodmap"
 
-# Applications you want to run with fluxbox.
-# MAKE SURE THAT APPS THAT KEEP RUNNING HAVE AN ''&'' AT THE END.
-#
-# unclutter -idle 2 &
-# wmnd &
-# wmsmixer -w &
-# idesk &
+			# Applications you want to run with fluxbox.
+			# MAKE SURE THAT APPS THAT KEEP RUNNING HAVE AN ''&'' AT THE END.
+			#
+			# unclutter -idle 2 &
+			# wmnd &
+			# wmsmixer -w &
+			# idesk &
 
-kodi &
+			kodi &
 
-# And last but not least we start fluxbox.
-# Because it is the last app you have to run it with ''exec'' before it.
+			# And last but not least we start fluxbox.
+			# Because it is the last app you have to run it with ''exec'' before it.
 
-exec fluxbox
-# or if you want to keep a log:
-# exec fluxbox -log "$fluxdir/log"
-EOF
-	chmod 644 $config
+			exec fluxbox
+			# or if you want to keep a log:
+			# exec fluxbox -log "$fluxdir/log"
+		EOF
+		chmod 644 $config
 	else
 		sed -i -e "/^\\s*exec\\s\+fluxbox/ s/^/kodi &\n\n/" $config
 	fi
@@ -1181,29 +1190,29 @@ i_motion() {
 		chmod a+rwx /var/motion
 	fi
 
-	[ -f "/etc/modprobe.d/v4l2loopback.conf" ] || cat > /etc/modprobe.d/v4l2loopback.conf << EOF
-options v4l2loopback video_nr=9
-EOF
+	[ -f "/etc/modprobe.d/v4l2loopback.conf" ] || cat > /etc/modprobe.d/v4l2loopback.conf <<- EOF
+		options v4l2loopback video_nr=9
+	EOF
 
-	[ -f "/etc/modules-load.d/v4l2loopback.conf" ] || cat > /etc/modules-load.d/v4l2loopback.conf << EOF
-v4l2loopback
-EOF
+	[ -f "/etc/modules-load.d/v4l2loopback.conf" ] || cat > /etc/modules-load.d/v4l2loopback.conf <<- EOF
+		v4l2loopback
+	EOF
 
-	[ -f "/etc/systemd/system/gst-video9.service" ] || cat > /etc/systemd/system/gst-video9.service << EOF
-[Unit]
-Description=GST Loopback video9
-After=local-fs.target
-Before=motion.service
+	[ -f "/etc/systemd/system/gst-video9.service" ] || cat > /etc/systemd/system/gst-video9.service <<- EOF
+		[Unit]
+		Description=GST Loopback video9
+		After=local-fs.target
+		Before=motion.service
 
-[Service]
-User=motion
-ExecStart=/usr/bin/gst-launch-1.0 v4l2src device=/dev/video0 ! videorate ! v4l2sink device=/dev/video9
-Type=simple
-StandardError=null
+		[Service]
+		User=motion
+		ExecStart=/usr/bin/gst-launch-1.0 v4l2src device=/dev/video0 ! videorate ! v4l2sink device=/dev/video9
+		Type=simple
+		StandardError=null
 
-[Install]
-WantedBy=multi-user.target
-EOF
+		[Install]
+		WantedBy=multi-user.target
+	EOF
 
 	#sed -i "s/^\(\\s*start_motion_daemon\\s*=\\s*\)no/\\1yes/" $config
 
