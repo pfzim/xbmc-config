@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # Install Arch Linux as described in official wiki
-# Create partition for torrents and mount to /mnt/data
-# Run this script for install Kodi
+# Optional: Create partition for torrents and mount to /mnt/data
+# Run this script for install and configure Kodi
 
 # Boot XBMCbuntu, CTRL+ALT+F1, login and run:
 # wget https://raw.githubusercontent.com/pfzim/xbmc-config/master/i.sh
@@ -684,7 +684,8 @@ c_bluez() {
 
 			{ echo -e "scan on"
 				sleep 5
-				echo -e "\nquit"
+				echo -e "\nscan off"
+				echo -e "quit"
 			} | bluetoothctl > /dev/null
 
 			bluetoothctl agent on
@@ -1226,6 +1227,15 @@ i_motion() {
 	echo -ne "\ntarget_dir /var/motion\n" >> $config
 	echo -ne "movie_filename backup-%Y-%m-%d-%H%M%S-%t-%v\n" >> $config
 	echo -ne "videodevice /dev/video9\n" >> $config
+
+	cp rotate9-motion.sh /usr/sbin/
+
+	crontab -u motion -l > .crontab
+	cat >> .crontab <<- EOF
+		18 2 * * * /usr/sbin/rotate9-motion.sh
+		@reboot /usr/sbin/rotate9-motion.sh
+	EOF
+	crontab -u motion .crontab
 
 	#wget -O v4l2loopback.zip https://github.com/umlaeute/v4l2loopback/archive/master.zip
 	#unzip v4l2loopback.zip
