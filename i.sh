@@ -535,14 +535,14 @@ i_tbt() {
 		chmod a+rwx "${torrent_media}"
 	fi
 
-	mv -fT /var/lib/transmission/info/resume "${torrent_sess}/resume"
-	mv -fT /var/lib/transmission/info/torrents "${torrent_sess}/torrents"
+	mv -fT /var/lib/transmission/.config/transmission-daemon/resume "${torrent_sess}/resume"
+	mv -fT /var/lib/transmission/.config/transmission-daemon/torrents "${torrent_sess}/torrents"
 
-	rm -rf /var/lib/transmission/info/resume
-	rm -rf /var/lib/transmission/info/torrents
+	rm -rf /var/lib/transmission/.config/transmission-daemon/resume
+	rm -rf /var/lib/transmission/.config/transmission-daemon/torrents
 
-	ln -sf "${torrent_sess}/resume/" /var/lib/transmission/info/resume
-	ln -sf "${torrent_sess}/torrents/" /var/lib/transmission/info/torrents
+	ln -sf "${torrent_sess}/resume/" /var/lib/transmission/.config/transmission-daemon/resume
+	ln -sf "${torrent_sess}/torrents/" /var/lib/transmission/.config/transmission-daemon/torrents
 
 	torrent_media_esc=`echo ${torrent_media} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
 	torrent_sess_esc=`echo ${torrent_sess} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
