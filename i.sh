@@ -216,12 +216,12 @@ c_net_pre() {
 			EOF
 
 			wpa_supplicant -B -i${net_if} -c/etc/wpa_supplicant/wpa_supplicant.conf
-			wpa_cli scan
-			echo "Wait for 3 seconds. Scanning WiFi..."
-			sleep 3
+			wpa_cli -i${net_if} scan
+			echo "Wait for 5 seconds. Scanning WiFi..."
+			sleep 5
 
 			# list_items = <SSID>;ap_type=<WPA|WEP|OPEN>
-			list_items=$(wpa_cli scan_results | awk '{
+			list_items=$(wpa_cli -i${net_if} scan_results | awk '{
 				if(NR > 2)
 				{
 					if(match($4, /WEP|WPA/, m))
@@ -354,7 +354,7 @@ c_net_pre() {
 		if [ "${net_type}" = "wlan" ] ; then
 			a_yesno "/etc/wpa_supplicant/wpa_supplicant-${net_if}.conf:\n${wpa_cfg}\n\nSave this configuration?" result "yes"
 			if [ "$result" = "Y" -o "$result" = "y" ] ; then
-				echo -ne $wpa_cfg > "/etc/wpa_supplicant/wpa_supplicant-${net_if}.conf"
+				echo -ne "$wpa_cfg" > "/etc/wpa_supplicant/wpa_supplicant-${net_if}.conf"
 
 				systemctl enable "wpa_supplicant@${net_if}"
 			fi
@@ -362,7 +362,7 @@ c_net_pre() {
 
 		a_yesno "/etc/systemd/network/90-network-${net_if}.network:\n${net_cfg}\n\nSave this configuration?" result "yes"
 		if [ "$result" = "Y" -o "$result" = "y" ] ; then
-			echo -ne $net_cfg > "/etc/systemd/network/90-network-${net_if}.network"
+			echo -ne "$net_cfg" > "/etc/systemd/network/90-network-${net_if}.network"
 
 			systemctl enable systemd-networkd
 			systemctl enable systemd-resolved
@@ -495,7 +495,7 @@ i_tbt_pre() {
 		torrent_media=`echo ${torrent_media} | sed -e "s/\\/*\$//"`
 		torrent_sess=`echo ${torrent_sess} | sed -e "s/\\/*\$//"`
 
-		a_yesno "transmission-daemon settings:\n\nDownloads path: ${torrent_media}\nWatch path: ${torrent_sess}\n\nEntered data correct?" result "yes"
+		a_yesno "transmission-daemon settings:\n\nDownloads path: ${torrent_media}\nSession path: ${torrent_sess}\n\nEntered data correct?" result "yes"
 		if [ "$result" = "Y" -o "$result" = "y" ] ; then
 			break
 		fi
@@ -680,13 +680,14 @@ c_bluez() {
 			#${DIALOG} --backtitle "${back_title}" --clear --title "XBMC configuration" --msgbox "Initialise pairing mode on connected device and press Enter..." 10 75
 			a_msgbox "Initialise pairing mode on connected device and press Enter..."
 			#read -p "Initialise pairing mode on connected device and press Enter..." result
-			echo "\n\nScanning for bluetooth devices...\n"
+			echo -ne "\n\nSomtimes bluetooth daemon crash. Then you need switch to other console Alt+F2 and run daemon again 'systemctl start bluetooth' for continue setup.\n\nScanning for bluetooth devices...\n"
 
 			{ echo -e "scan on"
 				sleep 5
 				echo -e "\nscan off"
 				echo -e "quit"
-			} | bluetoothctl > /dev/null
+			} | bluetoothctl
+			# > /dev/null
 
 			bluetoothctl agent on
 			bluetoothctl default-agent
@@ -840,7 +841,7 @@ i_fdm_pre() {
 
 i_fdm() {
 	pacman -S --noconfirm --needed fdm msmtp s-nail
-	pacman -U --needed mpack-1.6.4-x86_64.pkg.tar.xz
+	pacman -U --noconfirm --needed mpack-1.6.4-x86_64.pkg.tar.xz
 
 	if [ ! -f "/home/${username}/scripts/control-reply.sh" ] ; then
 		cat > "/home/${username}/scripts/control-reply.sh" << EOF
@@ -1121,6 +1122,7 @@ i_kodi() {
 	config="/home/${username}/.fluxbox/startup"
 
 	if [ ! -f $config ] ; then
+		[ -d /home/${username}/.fluxbox ] || mkdir -p /home/${username}/.fluxbox
 		cat > $config <<- EOF
 			#!/bin/sh
 			#
@@ -1182,7 +1184,7 @@ i_sshd() {
 
 i_motion() {
 	pacman -S --noconfirm --needed motion gstreamer
-	pacman -U --needed v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
+	pacman -U --noconfirm --needed v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
 
 	config="/etc/motion/motion.conf"
 
