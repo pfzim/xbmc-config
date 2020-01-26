@@ -758,12 +758,16 @@ i_httpd() {
 ############################
 
 i_frw() {
+	systemctl enable iptables
+	systemctl start iptables
+
 	iptables -A PREROUTING -t mangle -p tcp --sport 0:1024 -j TOS --set-tos Minimize-Delay
 	iptables -A PREROUTING -t mangle -p tcp --sport 1025:65535 -j TOS --set-tos Maximize-Throughput
 	iptables -A OUTPUT -t mangle -p tcp --dport 0:1024 -j TOS --set-tos Minimize-Delay
 	iptables -A OUTPUT -t mangle -p tcp --dport 1025:65535 -j TOS --set-tos Maximize-Throughput
 
-	#iptables-save > /etc/iptables.up.rules
+	iptables-save > /etc/iptables/iptables.rules
+
 	#if ! eval "cat /etc/network/interfaces | grep -v -e \"^\\\\s*#\" | grep -q -e \"/etc/iptables.up.rules\"" ; then
 	#  sed -i "/iface\\s*lo/a\\\\tpost-up iptables-restore < /etc/iptables.up.rules" /etc/network/interfaces
 	#fi
