@@ -507,7 +507,7 @@ i_tbt() {
 
 	systemctl start transmission
 
-	config="/var/lib/transmission/settings.json"
+	config="/var/lib/transmission/.config/transmission-daemon/settings.json"
 
 	if [ ! -d "${torrent_sess}" ] ; then
 		mkdir -p "${torrent_sess}"
@@ -845,7 +845,7 @@ i_fdm_pre() {
 
 i_fdm() {
 	pacman -S --noconfirm --needed fdm msmtp s-nail
-	pacman -U --noconfirm --needed mpack-1.6.4-x86_64.pkg.tar.xz
+	pacman -U --noconfirm --needed mpack-1.6-4-x86_64.pkg.tar.xz
 
 	if [ ! -f "/home/${username}/scripts/control-reply.sh" ] ; then
 		cat > "/home/${username}/scripts/control-reply.sh" << EOF
