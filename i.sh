@@ -1187,7 +1187,7 @@ i_sshd() {
 ############################
 
 i_motion() {
-	pacman -S --noconfirm --needed motion gstreamer linux-headers
+	pacman -S --noconfirm --needed motion gstreamer gst-plugins-good linux-headers
 	pacman -U --noconfirm --needed v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
 
 	config="/etc/motion/motion.conf"
