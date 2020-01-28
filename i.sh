@@ -1154,9 +1154,23 @@ i_kodi() {
 			# or if you want to keep a log:
 			# exec fluxbox -log "$fluxdir/log"
 		EOF
+
 		chmod 644 $config
 	else
 		sed -i -e "/^\\s*exec\\s\+fluxbox/ s/^/kodi &\n\n/" $config
+	fi
+
+
+	config="/home/${username}/.dmrc"
+
+	if [ ! -f $config ] ; then
+		cat > $config <<- EOF
+			[Desktop]
+			Session=fluxbox
+		EOF
+
+		chmod 644 $config
+		chown ${username}:${username} $config
 	fi
 
 	systemctl enable lxdm
