@@ -550,12 +550,12 @@ i_tbt() {
 	torrent_media_esc=`echo ${torrent_media} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
 	torrent_sess_esc=`echo ${torrent_sess} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
 
-	sed -i "s/^\(\\s*{\)/\\1\\n    \"watch-dir\": \"${torrent_sess_esc}\\/_control\\/\",\\n    \"watch-dir-enabled\": true,/" $config
-	sed -i "s/\"download-dir\": [^,]*/\"download-dir\": \"${torrent_media_esc}\\/\"/" $config
+	sed -i "s/^\(\\s*{\)/\\1\\n    \"watch-dir\": \"${torrent_sess_esc}\\/_control\",\\n    \"watch-dir-enabled\": true,/" $config
+	sed -i "s/\"download-dir\": [^,]*/\"download-dir\": \"${torrent_media_esc}\"/" $config
 	sed -i "s/\"rpc-authentication-required\": [^,]*/\"rpc-authentication-required\": false/" $config
 
 	systemctl enable transmission
-	systemctl restart transmission
+	systemctl reload transmission
 }
 
 # install onboard
@@ -866,8 +866,8 @@ cc=
 
 if [ -n "\${from}" ] ; then
 	echo \${from} | grep -qi "^${smtp_mail}"
-	if [ $? -ne 0 ] ; then
-		cc="-b \"${smtp_mail}\""
+	if [ \$? -ne 0 ] ; then
+		cc=" -b \"${smtp_mail}\""
 	fi
 else
 	from="${smtp_mail}"
@@ -876,7 +876,7 @@ fi
 eval "(\$1) | mailx -s \"Operation result\"\${cc} \"\${from}\""
 EOF
 
-		chmod 600 "/home/${username}/scripts/control-reply.sh"
+		chmod 700 "/home/${username}/scripts/control-reply.sh"
 		chown "${username}:${username}" "/home/${username}/scripts/control-reply.sh"
 	fi
 
@@ -969,7 +969,7 @@ EOF
 
 	if [ ! -f "/home/${username}/.mailrc" ] ; then
 		cat > "/home/${username}/.mailrc" <<- EOF
-			set sendmail="/usr/bin/msmtp"
+			set mta="file:///usr/bin/msmtp"
 			set from="${smtp_mail}"
 			#set message-sendmail-extra-arguments="-v"
 		EOF
