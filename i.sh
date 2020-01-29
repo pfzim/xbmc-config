@@ -421,6 +421,9 @@ c_ddns_pre() {
 c_ddns() {
 	pacman -S --noconfirm --needed cronie curl
 
+	systemctl enable cronie
+	systemctl start cronie
+
 	crontab -u $username -l > .crontab
 	cat >> .crontab <<- EOF
 		# curl version
@@ -844,8 +847,11 @@ i_fdm_pre() {
 }
 
 i_fdm() {
-	pacman -S --noconfirm --needed fdm msmtp s-nail
+	pacman -S --noconfirm --needed fdm msmtp s-nail cronie
 	pacman -U --noconfirm --needed mpack-1.6-4-x86_64.pkg.tar.xz
+
+	systemctl enable cronie
+	systemctl start cronie
 
 	if [ ! -f "/home/${username}/scripts/control-reply.sh" ] ; then
 		cat > "/home/${username}/scripts/control-reply.sh" << EOF
@@ -1201,8 +1207,11 @@ i_sshd() {
 ############################
 
 i_motion() {
-	pacman -S --noconfirm --needed motion gstreamer gst-plugins-good linux-headers
+	pacman -S --noconfirm --needed motion gstreamer gst-plugins-good linux-headers cronie
 	pacman -U --noconfirm --needed v4l2loopback-dkms-0.12.3-1-x86_64.pkg.tar.xz
+
+	systemctl enable cronie
+	systemctl start cronie
 
 	config="/etc/motion/motion.conf"
 
