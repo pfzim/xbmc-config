@@ -1218,6 +1218,7 @@ i_kodi() {
 		EOF
 
 		chmod 644 $config
+		chown -R ${user_name}:${user_name} "${user_home}/.fluxbox"
 	else
 		sed -i -e "/^\\s*exec\\s\+fluxbox/ s/^/kodi &\n\n/" $config
 	fi
@@ -1234,6 +1235,8 @@ i_kodi() {
 		chmod 644 $config
 		chown ${user_name}:${user_name} $config
 	fi
+
+	su -c "fluxbox-generate_menu" --login $user_name
 
 	systemctl enable lxdm
 }
