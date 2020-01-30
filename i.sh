@@ -18,6 +18,7 @@ DIALOG=whiptail
 idir=$(pwd)
 dm=fluxbox
 user_name=xbmc
+user_home=/home/xbmc
 
 ask() {
 	while :
@@ -54,26 +55,45 @@ a_yesno() {
 
 # text result=default value
 a_input() {
-	temp_result=`mktemp 2>/dev/null` || temp_result=/tmp/test$$
-	eval "${DIALOG} --backtitle \"${back_title}\" --clear --title \"${fg_title}\"${defval} --inputbox \"$1\" 10 75 \"\${$2}\" 2>$temp_result"
-	result=`cat $temp_result`
-	rm -f $temp_result
-	if [ $? -eq 0 ] ; then
-		eval "$2=\$result"
-	fi
+	while :
+	do
+		temp_result=`mktemp 2>/dev/null` || temp_result=/tmp/test$$
+		eval "${DIALOG} --backtitle \"${back_title}\" --clear --title \"${fg_title}\"${defval} --inputbox \"$1\" 10 75 \"\${$2}\" 2>$temp_result"
+		exit_code=$?
+		result=`cat $temp_result`
+		rm -f $temp_result
+		if [ $exit_code -eq 0 ] ; then
+			eval "$2=\$result"
+			break
+		else
+			a_yesno "Interrupt installation?" result "no"
+			if [ "$result" = "Y" -o "$result" = "y" ] ; then
+				exit 1
+			fi
+		fi
+	done
 }
 
 # text result
 a_passwd0() {
-	temp_result=`mktemp 2>/dev/null` || temp_result=/tmp/test$$
-	${DIALOG} --backtitle "${back_title}" --clear --title "${fg_title}"${defval} --passwordbox "$1" 10 75 2>$temp_result
-	result=`cat $temp_result`
-	rm -f $temp_result
-	if [ $? -eq 0 ] ; then
-		eval "$2=\$result"
-	else
-		eval "$2=\"$3\""
-	fi
+	while :
+	do
+		temp_result=`mktemp 2>/dev/null` || temp_result=/tmp/test$$
+		${DIALOG} --backtitle "${back_title}" --clear --title "${fg_title}"${defval} --passwordbox "$1" 10 75 2>$temp_result
+		exit_code=$?
+		result=`cat $temp_result`
+		rm -f $temp_result
+		if [ $exit_code -eq 0 ] ; then
+			eval "$2=\$result"
+			break
+		else
+			#eval "$2=\"$3\""
+			a_yesno "Interrupt installation?" result "no"
+			if [ "$result" = "Y" -o "$result" = "y" ] ; then
+				exit 1
+			fi
+		fi
+	done
 }
 
 a_passwd() {
@@ -93,7 +113,24 @@ a_passwd() {
 
 # ask user name for run xbmc
 c_user_pre() {
-	a_input "Enter username for run XBMC (must be exist):" user_name
+	while :
+	do
+		a_input "Enter username for run XBMC (must be exist):" user_name
+
+		user_name=$(echo $user_name | sed -e 's/ //')
+		user_info=$(getent passwd $user_name)
+		if [ $? -eq 0 ] ; then
+			user_home=$(echo $user_info | cut -d: -f6)
+			break
+		else
+			a_yesno "User '$user_name' does not exist\n\nCreate this user?" result "yes"
+			if [ "$result" = "Y" -o "$result" = "y" ] ; then
+				useradd -m $user_name
+				passwd $user_name
+				#break
+			fi
+		fi
+	done
 
 	# useradd -m -G wheel,sudo xbmc
 	# useradd -m xbmc
@@ -439,7 +476,21 @@ c_ddns() {
 ############################
 
 i_mc() {
-	pacman -S --noconfirm --needed mc man bash-completion sudo cronie
+	pacman -S --noconfirm --needed mc man bash-completion sudo cronie vim
+
+	[ -f "/root/.inputrc" ] || cat > "/root/.inputrc" <<- END
+		"\e[A": history-search-backward
+		"\e[B": history-search-forward
+		"\e[1~": beginning-of-line
+		"\e[4~": end-of-line
+	END
+
+	[ -f "${user_home}/.inputrc" ] || cat > "${user_home}/.inputrc" <<- END
+		"\e[A": history-search-backward
+		"\e[B": history-search-forward
+		"\e[1~": beginning-of-line
+		"\e[4~": end-of-line
+	END
 }
 
 # install xbmc plugins
@@ -465,16 +516,19 @@ i_plugins() {
 	# Frodo
 	#wget http://mirrors.xbmc.org/addons/frodo/plugin.program.advanced.launcher/plugin.program.advanced.launcher-1.7.6.zip
 	#unzip plugin.program.advanced.launcher-1.7.6.zip -d /home/xbmc/.xbmc/addons/
-	wget http://www.gwenael.org/Repository/repository.angelscry.xbmc-plugins/repository.angelscry.xbmc-plugins-1.2.2.zip
-	unzip repository.angelscry.xbmc-plugins-1.2.2.zip -d /home/xbmc/.xbmc/addons/
-	wget http://www.gwenael.org/Repository/plugin.program.advanced.launcher/plugin.program.advanced.launcher-2.0.10.zip
-	unzip plugin.program.advanced.launcher-2.0.10.zip -d /home/xbmc/.xbmc/addons/
+
+#	wget http://www.gwenael.org/Repository/repository.angelscry.xbmc-plugins/repository.angelscry.xbmc-plugins-1.2.2.zip
+#	unzip repository.angelscry.xbmc-plugins-1.2.2.zip -d /home/xbmc/.xbmc/addons/
+#	wget http://www.gwenael.org/Repository/plugin.program.advanced.launcher/plugin.program.advanced.launcher-2.0.10.zip
+#	unzip plugin.program.advanced.launcher-2.0.10.zip -d /home/xbmc/.xbmc/addons/
+
 	#wget http://mirrors.xbmc.org/addons/eden/skin.confluence-vertical/skin.confluence-vertical-2.1.1.zip
 	#unzip skin.confluence-vertical-2.1.1.zip -d /home/xbmc/.xbmc/addons/
-	wget http://mirrors.xbmc.org/addons/frodo/plugin.program.rtorrent/plugin.program.rtorrent-1.11.7.zip
-	unzip plugin.program.rtorrent-1.11.7.zip -d /home/xbmc/.xbmc/addons/
-	wget http://mirrors.xbmc.org/addons/frodo/script.transmission/script.transmission-0.7.1.zip
-	unzip script.transmission-0.7.1.zip -d /home/xbmc/.xbmc/addons/
+
+#	wget http://mirrors.xbmc.org/addons/frodo/plugin.program.rtorrent/plugin.program.rtorrent-1.11.7.zip
+#	unzip plugin.program.rtorrent-1.11.7.zip -d /home/xbmc/.xbmc/addons/
+#	wget http://mirrors.xbmc.org/addons/frodo/script.transmission/script.transmission-0.7.1.zip
+#	unzip script.transmission-0.7.1.zip -d /home/xbmc/.xbmc/addons/
 
 	#wget
 	#unzip   -d /home/xbmc/.xbmc/addons/
@@ -510,7 +564,9 @@ i_tbt() {
 
 	systemctl start transmission
 
-	config="/var/lib/transmission/.config/transmission-daemon/settings.json"
+	transmission_home=$(getent passwd transmission | cut -d: -f6)
+
+	config="${transmission_home}/.config/transmission-daemon/settings.json"
 
 	if [ ! -d "${torrent_sess}" ] ; then
 		mkdir -p "${torrent_sess}"
@@ -538,14 +594,14 @@ i_tbt() {
 		chmod a+rwx "${torrent_media}"
 	fi
 
-	mv -fT /var/lib/transmission/.config/transmission-daemon/resume "${torrent_sess}/resume"
-	mv -fT /var/lib/transmission/.config/transmission-daemon/torrents "${torrent_sess}/torrents"
+	mv -fT ${transmission_home}/.config/transmission-daemon/resume "${torrent_sess}/resume"
+	mv -fT ${transmission_home}/.config/transmission-daemon/torrents "${torrent_sess}/torrents"
 
-	rm -rf /var/lib/transmission/.config/transmission-daemon/resume
-	rm -rf /var/lib/transmission/.config/transmission-daemon/torrents
+	rm -rf ${transmission_home}/.config/transmission-daemon/resume
+	rm -rf ${transmission_home}/.config/transmission-daemon/torrents
 
-	ln -sf "${torrent_sess}/resume/" /var/lib/transmission/.config/transmission-daemon/resume
-	ln -sf "${torrent_sess}/torrents/" /var/lib/transmission/.config/transmission-daemon/torrents
+	ln -sf "${torrent_sess}/resume/" ${transmission_home}/.config/transmission-daemon/resume
+	ln -sf "${torrent_sess}/torrents/" ${transmission_home}/.config/transmission-daemon/torrents
 
 	torrent_media_esc=`echo ${torrent_media} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
 	torrent_sess_esc=`echo ${torrent_sess} | sed -e "s/\([\\/\\+\\.\\\$]\)/\\\\\\\\\\1/g"`
@@ -573,13 +629,13 @@ i_onboard() {
 i_ffox() {
 	pacman -S --noconfirm --needed firefox
 
-	if [ ! -d "/home/${user_name}/scripts" ] ; then
-		mkdir "/home/${user_name}/scripts"
-		chmod a+rx "/home/${user_name}/scripts"
+	if [ ! -d "${user_home}/scripts" ] ; then
+		mkdir "${user_home}/scripts"
+		chmod a+rx "${user_home}/scripts"
 	fi
 
-	if [ ! -f "/home/${user_name}/scripts/firefox.sh" ] ; then
-		cat > "/home/${user_name}/scripts/firefox.sh" <<- EOF
+	if [ ! -f "${user_home}/scripts/firefox.sh" ] ; then
+		cat > "${user_home}/scripts/firefox.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -588,7 +644,7 @@ i_ffox() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${user_name}/scripts/firefox.sh"
+		chmod a+rx "${user_home}/scripts/firefox.sh"
 	fi
 }
 
@@ -598,13 +654,13 @@ i_ffox() {
 i_chrome() {
 	pacman -S --noconfirm --needed chromium
 
-	if [ ! -d "/home/${user_name}/scripts" ] ; then
-		mkdir "/home/${user_name}/scripts"
-		chmod a+rx "/home/${user_name}/scripts"
+	if [ ! -d "${user_home}/scripts" ] ; then
+		mkdir "${user_home}/scripts"
+		chmod a+rx "${user_home}/scripts"
 	fi
 
-	if [ ! -f "/home/${user_name}/scripts/chrome.sh" ] ; then
-		cat > "/home/${user_name}/scripts/chrome.sh" <<- EOF
+	if [ ! -f "${user_home}/scripts/chrome.sh" ] ; then
+		cat > "${user_home}/scripts/chrome.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -613,7 +669,7 @@ i_chrome() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${user_name}/scripts/chrome.sh"
+		chmod a+rx "${user_home}/scripts/chrome.sh"
 	fi
 }
 
@@ -853,8 +909,8 @@ i_fdm() {
 	systemctl enable cronie
 	systemctl start cronie
 
-	if [ ! -f "/home/${user_name}/scripts/control-reply.sh" ] ; then
-		cat > "/home/${user_name}/scripts/control-reply.sh" << EOF
+	if [ ! -f "${user_home}/scripts/control-reply.sh" ] ; then
+		cat > "${user_home}/scripts/control-reply.sh" << EOF
 #!/bin/sh
 
 if [ "\$#" -ne 1 ] ; then
@@ -876,12 +932,12 @@ fi
 eval "(\$1) | mailx -s \"Operation result\"\${cc} \"\${from}\""
 EOF
 
-		chmod 700 "/home/${user_name}/scripts/control-reply.sh"
-		chown "${user_name}:${user_name}" "/home/${user_name}/scripts/control-reply.sh"
+		chmod 700 "${user_home}/scripts/control-reply.sh"
+		chown "${user_name}:${user_name}" "${user_home}/scripts/control-reply.sh"
 	fi
 
-	if [ ! -f "/home/${user_name}/.fdm.conf" ] ; then
-		cat > "/home/${user_name}/.fdm.conf" << EOF
+	if [ ! -f "${user_home}/.fdm.conf" ] ; then
+		cat > "${user_home}/.fdm.conf" << EOF
 set maximum-size      10M
 set delete-oversized
 set queue-high        1
@@ -896,7 +952,7 @@ action "inbox" maildir "%h/Mail/INBOX"
 action "torrent-add" pipe "munpack -f -q -C ${torrent_dir}/ ; for i in ${torrent_dir}/*.torrent ; do chmod a+r \\\$i ; done"
 action "torrent-add-audio" pipe "munpack -f -q -C ${torrent_dir}/audio/ ; for i in ${torrent_dir}/audio/*.torrent ; do chmod a+r \\\$i ; done"
 action "torrent-add-video" pipe "munpack -f -q -C ${torrent_dir}/video/ ; for i in ${torrent_dir}/video/*.torrent ; do chmod a+r \\\$i ; done"
-action "torrent-list" pipe "/home/${user_name}/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
+action "torrent-list" pipe "${user_home}/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
 action "torrent-alt-on" exec "transmission-remote --alt-speed"
 action "torrent-alt-off" exec "transmission-remote --no-alt-speed"
 
@@ -918,26 +974,26 @@ match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+off\\\\s*\$
 match all action "keep"
 EOF
 
-		chmod 600 "/home/${user_name}/.fdm.conf"
-		chown "${user_name}:${user_name}" "/home/${user_name}/.fdm.conf"
+		chmod 600 "${user_home}/.fdm.conf"
+		chown "${user_name}:${user_name}" "${user_home}/.fdm.conf"
 	fi
 
-	if [ ! -d "/home/${user_name}/Mail" ] ; then
-		mkdir "/home/${user_name}/Mail"
-		chmod u+rwx "/home/${user_name}/Mail"
-		chown "${user_name}:${user_name}" "/home/${user_name}/Mail"
+	if [ ! -d "${user_home}/Mail" ] ; then
+		mkdir "${user_home}/Mail"
+		chmod u+rwx "${user_home}/Mail"
+		chown "${user_name}:${user_name}" "${user_home}/Mail"
 	fi
 
 	if ! crontab -u $user_name -l | grep -qFe "fdm -q fetch" ; then
 		crontab -u $user_name -l > .crontab
 		cat >> .crontab <<- EOF
-			*/15 * * * * rm -f "/home/${user_name}/.fdm.lock"; fdm -q fetch
+			*/15 * * * * rm -f "${user_home}/.fdm.lock"; fdm -q fetch
 		EOF
 		crontab -u $user_name .crontab
 	fi
 
-	if [ ! -f "/home/${user_name}/.msmtprc" ] ; then
-		cat > "/home/${user_name}/.msmtprc" <<- EOF
+	if [ ! -f "${user_home}/.msmtprc" ] ; then
+		cat > "${user_home}/.msmtprc" <<- EOF
 			defaults
 
 			syslog LOG_MAIL
@@ -960,22 +1016,22 @@ EOF
 			account default : xbmc
 		EOF
 
-		chmod 600 "/home/${user_name}/.msmtprc"
-		chown "${user_name}:${user_name}" "/home/${user_name}/.msmtprc"
+		chmod 600 "${user_home}/.msmtprc"
+		chown "${user_name}:${user_name}" "${user_home}/.msmtprc"
 	fi
 
-	#echo "\nrm -f /home/${user_name}/.fdm.lock" >> /etc/rc.local
+	#echo "\nrm -f ${user_home}/.fdm.lock" >> /etc/rc.local
 	#sed -i "s/^\\s*exit\\s*0\\s*\$/\\[ -f \\/home\\/${user_name}\\/\\.fdm\\.lock \\] \\&\\& rm -f \\/home\\/${user_name}\\/\\.fdm\\.lock\\n\\nexit 0\\n/" /etc/rc.local
 
-	if [ ! -f "/home/${user_name}/.mailrc" ] ; then
-		cat > "/home/${user_name}/.mailrc" <<- EOF
+	if [ ! -f "${user_home}/.mailrc" ] ; then
+		cat > "${user_home}/.mailrc" <<- EOF
 			set mta="file:///usr/bin/msmtp"
 			set from="${smtp_mail}"
 			#set message-sendmail-extra-arguments="-v"
 		EOF
 
-		chmod 600 "/home/${user_name}/.mailrc"
-		chown "${user_name}:${user_name}" "/home/${user_name}/.mailrc"
+		chmod 600 "${user_home}/.mailrc"
+		chown "${user_name}:${user_name}" "${user_home}/.mailrc"
 	fi
 }
 
@@ -1100,13 +1156,13 @@ c_fonts() {
 i_burn() {
 	pacman -S --noconfirm --needed brasero
 
-	if [ ! -d "/home/${user_name}/scripts" ] ; then
-		mkdir "/home/${user_name}/scripts"
-		chmod a+rx "/home/${user_name}/scripts"
+	if [ ! -d "${user_home}/scripts" ] ; then
+		mkdir "${user_home}/scripts"
+		chmod a+rx "${user_home}/scripts"
 	fi
 
-	if [ ! -f "/home/${user_name}/scripts/brasero.sh" ] ; then
-		cat > "/home/${user_name}/scripts/brasero.sh" <<- EOF
+	if [ ! -f "${user_home}/scripts/brasero.sh" ] ; then
+		cat > "${user_home}/scripts/brasero.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -1115,7 +1171,7 @@ i_burn() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${user_name}/scripts/brasero.sh"
+		chmod a+rx "${user_home}/scripts/brasero.sh"
 	fi
 }
 
@@ -1129,10 +1185,10 @@ i_kodi() {
 	sed -i -e "/^\\s*autologin\\s*=/ s/^/#/" $config
 	sed -i -e "/^\\s*\\[base\\]/a autologin=${user_name}" $config
 
-	config="/home/${user_name}/.fluxbox/startup"
+	config="${user_home}/.fluxbox/startup"
 
 	if [ ! -f $config ] ; then
-		[ -d /home/${user_name}/.fluxbox ] || mkdir -p /home/${user_name}/.fluxbox
+		[ -d "${user_home}/.fluxbox" ] || mkdir -p "${user_home}/.fluxbox"
 		cat > $config <<- EOF
 			#!/bin/sh
 			#
@@ -1167,7 +1223,7 @@ i_kodi() {
 	fi
 
 
-	config="/home/${user_name}/.dmrc"
+	config="${user_home}/.dmrc"
 
 	if [ ! -f $config ] ; then
 		cat > $config <<- EOF
@@ -1352,18 +1408,18 @@ tar -czpf backup-${curdate}-pfzim-xbmc.tar.gz --ignore-failed-read .crontab \
 	/usr/share/alsa/cards/HDA-Intel.conf \
 	/usr/share/X11/xorg.conf.d \
 	/home/rtorrent/.rtorrent.rc \
-	/home/${user_name}/.asoundrc \
-	/home/${user_name}/.fdm.conf \
-	/home/${user_name}/.msmtprc \
-	/home/${user_name}/scripts/brasero.sh \
-	/home/${user_name}/scripts/firefox.sh \
-	/home/${user_name}/scripts/chrome.sh \
-	/home/${user_name}/.xbmc/userdata/advancedsettings.xml \
-	/home/${user_name}/.xbmc/userdata/guisettings.xml \
-	/home/${user_name}/.xbmc/userdata/LCD.xml \
-	/home/${user_name}/.xbmc/userdata/profiles.xml \
-	/home/${user_name}/.xbmc/userdata/sources.xml \
-	/home/${user_name}/.xbmc/userdata/RssFeeds.xml
+	${user_home}/.asoundrc \
+	${user_home}/.fdm.conf \
+	${user_home}/.msmtprc \
+	${user_home}/scripts/brasero.sh \
+	${user_home}/scripts/firefox.sh \
+	${user_home}/scripts/chrome.sh \
+	${user_home}/.xbmc/userdata/advancedsettings.xml \
+	${user_home}/.xbmc/userdata/guisettings.xml \
+	${user_home}/.xbmc/userdata/LCD.xml \
+	${user_home}/.xbmc/userdata/profiles.xml \
+	${user_home}/.xbmc/userdata/sources.xml \
+	${user_home}/.xbmc/userdata/RssFeeds.xml
 
 
 #[ -f xbmc-pfz-0.08.tar.bz2 ] || wget "http://hencvik.googlecode.com/files/xbmc-pfz-0.08.tar.bz2"
