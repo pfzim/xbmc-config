@@ -17,7 +17,7 @@ fg_title="XBMC configuration"
 DIALOG=whiptail
 idir=$(pwd)
 dm=fluxbox
-username=xbmc
+user_name=xbmc
 
 ask() {
 	while :
@@ -93,7 +93,7 @@ a_passwd() {
 
 # ask user name for run xbmc
 c_user_pre() {
-	a_input "Enter username for run XBMC (must be exist):" username
+	a_input "Enter username for run XBMC (must be exist):" user_name
 
 	# useradd -m -G wheel,sudo xbmc
 	# useradd -m xbmc
@@ -424,7 +424,7 @@ c_ddns() {
 	systemctl enable cronie
 	systemctl start cronie
 
-	crontab -u $username -l > .crontab
+	crontab -u $user_name -l > .crontab
 	cat >> .crontab <<- EOF
 		# curl version
 		*/15 * * * * curl --silent --basic --user "${noip_user}:${noip_passwd}" --user-agent "curl based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}" --output /dev/null
@@ -432,7 +432,7 @@ c_ddns() {
 		# wget version
 		# */15 * * * * wget --quiet --delete-after --auth-no-challenge --user="${noip_user}" --password="${noip_passwd}" --user-agent="wget based script/0.01 pfzim@mail.ru" "http://dynupdate.no-ip.com/nic/update?hostname=${noip_host}"
 	EOF
-	crontab -u $username .crontab
+	crontab -u $user_name .crontab
 }
 
 # install console tools
@@ -573,13 +573,13 @@ i_onboard() {
 i_ffox() {
 	pacman -S --noconfirm --needed firefox
 
-	if [ ! -d "/home/${username}/scripts" ] ; then
-		mkdir "/home/${username}/scripts"
-		chmod a+rx "/home/${username}/scripts"
+	if [ ! -d "/home/${user_name}/scripts" ] ; then
+		mkdir "/home/${user_name}/scripts"
+		chmod a+rx "/home/${user_name}/scripts"
 	fi
 
-	if [ ! -f "/home/${username}/scripts/firefox.sh" ] ; then
-		cat > "/home/${username}/scripts/firefox.sh" <<- EOF
+	if [ ! -f "/home/${user_name}/scripts/firefox.sh" ] ; then
+		cat > "/home/${user_name}/scripts/firefox.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -588,7 +588,7 @@ i_ffox() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${username}/scripts/firefox.sh"
+		chmod a+rx "/home/${user_name}/scripts/firefox.sh"
 	fi
 }
 
@@ -598,13 +598,13 @@ i_ffox() {
 i_chrome() {
 	pacman -S --noconfirm --needed chromium
 
-	if [ ! -d "/home/${username}/scripts" ] ; then
-		mkdir "/home/${username}/scripts"
-		chmod a+rx "/home/${username}/scripts"
+	if [ ! -d "/home/${user_name}/scripts" ] ; then
+		mkdir "/home/${user_name}/scripts"
+		chmod a+rx "/home/${user_name}/scripts"
 	fi
 
-	if [ ! -f "/home/${username}/scripts/chrome.sh" ] ; then
-		cat > "/home/${username}/scripts/chrome.sh" <<- EOF
+	if [ ! -f "/home/${user_name}/scripts/chrome.sh" ] ; then
+		cat > "/home/${user_name}/scripts/chrome.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -613,7 +613,7 @@ i_chrome() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${username}/scripts/chrome.sh"
+		chmod a+rx "/home/${user_name}/scripts/chrome.sh"
 	fi
 }
 
@@ -781,13 +781,13 @@ i_frw() {
 
 pop3_server="pop.yandex.ru"
 pop3_port="995"
-pop3_login=""
+pop3_login="username"
 pop3_passwd=""
 
 smtp_server="smtp.yandex.ru"
 smtp_port="587"
 smtp_mail="username@yandex.ru"
-smtp_login=""
+smtp_login="username"
 smtp_passwd=""
 
 torrent_dir="${torrent_sess}/_control"
@@ -853,8 +853,8 @@ i_fdm() {
 	systemctl enable cronie
 	systemctl start cronie
 
-	if [ ! -f "/home/${username}/scripts/control-reply.sh" ] ; then
-		cat > "/home/${username}/scripts/control-reply.sh" << EOF
+	if [ ! -f "/home/${user_name}/scripts/control-reply.sh" ] ; then
+		cat > "/home/${user_name}/scripts/control-reply.sh" << EOF
 #!/bin/sh
 
 if [ "\$#" -ne 1 ] ; then
@@ -876,12 +876,12 @@ fi
 eval "(\$1) | mailx -s \"Operation result\"\${cc} \"\${from}\""
 EOF
 
-		chmod 700 "/home/${username}/scripts/control-reply.sh"
-		chown "${username}:${username}" "/home/${username}/scripts/control-reply.sh"
+		chmod 700 "/home/${user_name}/scripts/control-reply.sh"
+		chown "${user_name}:${user_name}" "/home/${user_name}/scripts/control-reply.sh"
 	fi
 
-	if [ ! -f "/home/${username}/.fdm.conf" ] ; then
-		cat > "/home/${username}/.fdm.conf" << EOF
+	if [ ! -f "/home/${user_name}/.fdm.conf" ] ; then
+		cat > "/home/${user_name}/.fdm.conf" << EOF
 set maximum-size      10M
 set delete-oversized
 set queue-high        1
@@ -896,7 +896,7 @@ action "inbox" maildir "%h/Mail/INBOX"
 action "torrent-add" pipe "munpack -f -q -C ${torrent_dir}/ ; for i in ${torrent_dir}/*.torrent ; do chmod a+r \\\$i ; done"
 action "torrent-add-audio" pipe "munpack -f -q -C ${torrent_dir}/audio/ ; for i in ${torrent_dir}/audio/*.torrent ; do chmod a+r \\\$i ; done"
 action "torrent-add-video" pipe "munpack -f -q -C ${torrent_dir}/video/ ; for i in ${torrent_dir}/video/*.torrent ; do chmod a+r \\\$i ; done"
-action "torrent-list" pipe "/home/${username}/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
+action "torrent-list" pipe "/home/${user_name}/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
 action "torrent-alt-on" exec "transmission-remote --alt-speed"
 action "torrent-alt-off" exec "transmission-remote --no-alt-speed"
 
@@ -918,26 +918,26 @@ match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+off\\\\s*\$
 match all action "keep"
 EOF
 
-		chmod 600 "/home/${username}/.fdm.conf"
-		chown "${username}:${username}" "/home/${username}/.fdm.conf"
+		chmod 600 "/home/${user_name}/.fdm.conf"
+		chown "${user_name}:${user_name}" "/home/${user_name}/.fdm.conf"
 	fi
 
-	if [ ! -d "/home/${username}/Mail" ] ; then
-		mkdir "/home/${username}/Mail"
-		chmod u+rwx "/home/${username}/Mail"
-		chown "${username}:${username}" "/home/${username}/Mail"
+	if [ ! -d "/home/${user_name}/Mail" ] ; then
+		mkdir "/home/${user_name}/Mail"
+		chmod u+rwx "/home/${user_name}/Mail"
+		chown "${user_name}:${user_name}" "/home/${user_name}/Mail"
 	fi
 
-	if ! crontab -u $username -l | grep -qFe "fdm -q fetch" ; then
-		crontab -u $username -l > .crontab
+	if ! crontab -u $user_name -l | grep -qFe "fdm -q fetch" ; then
+		crontab -u $user_name -l > .crontab
 		cat >> .crontab <<- EOF
-			*/15 * * * * rm -f "/home/${username}/.fdm.lock"; fdm -q fetch
+			*/15 * * * * rm -f "/home/${user_name}/.fdm.lock"; fdm -q fetch
 		EOF
-		crontab -u $username .crontab
+		crontab -u $user_name .crontab
 	fi
 
-	if [ ! -f "/home/${username}/.msmtprc" ] ; then
-		cat > "/home/${username}/.msmtprc" <<- EOF
+	if [ ! -f "/home/${user_name}/.msmtprc" ] ; then
+		cat > "/home/${user_name}/.msmtprc" <<- EOF
 			defaults
 
 			syslog LOG_MAIL
@@ -960,22 +960,22 @@ EOF
 			account default : xbmc
 		EOF
 
-		chmod 600 "/home/${username}/.msmtprc"
-		chown "${username}:${username}" "/home/${username}/.msmtprc"
+		chmod 600 "/home/${user_name}/.msmtprc"
+		chown "${user_name}:${user_name}" "/home/${user_name}/.msmtprc"
 	fi
 
-	#echo "\nrm -f /home/${username}/.fdm.lock" >> /etc/rc.local
-	#sed -i "s/^\\s*exit\\s*0\\s*\$/\\[ -f \\/home\\/${username}\\/\\.fdm\\.lock \\] \\&\\& rm -f \\/home\\/${username}\\/\\.fdm\\.lock\\n\\nexit 0\\n/" /etc/rc.local
+	#echo "\nrm -f /home/${user_name}/.fdm.lock" >> /etc/rc.local
+	#sed -i "s/^\\s*exit\\s*0\\s*\$/\\[ -f \\/home\\/${user_name}\\/\\.fdm\\.lock \\] \\&\\& rm -f \\/home\\/${user_name}\\/\\.fdm\\.lock\\n\\nexit 0\\n/" /etc/rc.local
 
-	if [ ! -f "/home/${username}/.mailrc" ] ; then
-		cat > "/home/${username}/.mailrc" <<- EOF
+	if [ ! -f "/home/${user_name}/.mailrc" ] ; then
+		cat > "/home/${user_name}/.mailrc" <<- EOF
 			set mta="file:///usr/bin/msmtp"
 			set from="${smtp_mail}"
 			#set message-sendmail-extra-arguments="-v"
 		EOF
 
-		chmod 600 "/home/${username}/.mailrc"
-		chown "${username}:${username}" "/home/${username}/.mailrc"
+		chmod 600 "/home/${user_name}/.mailrc"
+		chown "${user_name}:${user_name}" "/home/${user_name}/.mailrc"
 	fi
 }
 
@@ -1100,13 +1100,13 @@ c_fonts() {
 i_burn() {
 	pacman -S --noconfirm --needed brasero
 
-	if [ ! -d "/home/${username}/scripts" ] ; then
-		mkdir "/home/${username}/scripts"
-		chmod a+rx "/home/${username}/scripts"
+	if [ ! -d "/home/${user_name}/scripts" ] ; then
+		mkdir "/home/${user_name}/scripts"
+		chmod a+rx "/home/${user_name}/scripts"
 	fi
 
-	if [ ! -f "/home/${username}/scripts/brasero.sh" ] ; then
-		cat > "/home/${username}/scripts/brasero.sh" <<- EOF
+	if [ ! -f "/home/${user_name}/scripts/brasero.sh" ] ; then
+		cat > "/home/${user_name}/scripts/brasero.sh" <<- EOF
 			#!/bin/sh
 
 			#${dm} &
@@ -1115,7 +1115,7 @@ i_burn() {
 			#killall -9 ${dm}
 		EOF
 
-		chmod a+rx "/home/${username}/scripts/brasero.sh"
+		chmod a+rx "/home/${user_name}/scripts/brasero.sh"
 	fi
 }
 
@@ -1127,12 +1127,12 @@ i_kodi() {
 	config="/etc/lxdm/lxdm.conf"
 
 	sed -i -e "/^\\s*autologin\\s*=/ s/^/#/" $config
-	sed -i -e "/^\\s*\\[base\\]/a autologin=${username}" $config
+	sed -i -e "/^\\s*\\[base\\]/a autologin=${user_name}" $config
 
-	config="/home/${username}/.fluxbox/startup"
+	config="/home/${user_name}/.fluxbox/startup"
 
 	if [ ! -f $config ] ; then
-		[ -d /home/${username}/.fluxbox ] || mkdir -p /home/${username}/.fluxbox
+		[ -d /home/${user_name}/.fluxbox ] || mkdir -p /home/${user_name}/.fluxbox
 		cat > $config <<- EOF
 			#!/bin/sh
 			#
@@ -1167,7 +1167,7 @@ i_kodi() {
 	fi
 
 
-	config="/home/${username}/.dmrc"
+	config="/home/${user_name}/.dmrc"
 
 	if [ ! -f $config ] ; then
 		cat > $config <<- EOF
@@ -1176,7 +1176,7 @@ i_kodi() {
 		EOF
 
 		chmod 644 $config
-		chown ${username}:${username} $config
+		chown ${user_name}:${user_name} $config
 	fi
 
 	systemctl enable lxdm
@@ -1329,7 +1329,7 @@ cd xbmc_install
 
 # backup
 curdate=`date '+%Y-%m-%d-%H-%M%S'`
-crontab -u $username -l > .crontab
+crontab -u $user_name -l > .crontab
 tar -czpf backup-${curdate}-pfzim-xbmc.tar.gz --ignore-failed-read .crontab \
 	/etc/asound.conf \
 	/etc/default/rcS \
@@ -1352,18 +1352,18 @@ tar -czpf backup-${curdate}-pfzim-xbmc.tar.gz --ignore-failed-read .crontab \
 	/usr/share/alsa/cards/HDA-Intel.conf \
 	/usr/share/X11/xorg.conf.d \
 	/home/rtorrent/.rtorrent.rc \
-	/home/${username}/.asoundrc \
-	/home/${username}/.fdm.conf \
-	/home/${username}/.msmtprc \
-	/home/${username}/scripts/brasero.sh \
-	/home/${username}/scripts/firefox.sh \
-	/home/${username}/scripts/chrome.sh \
-	/home/${username}/.xbmc/userdata/advancedsettings.xml \
-	/home/${username}/.xbmc/userdata/guisettings.xml \
-	/home/${username}/.xbmc/userdata/LCD.xml \
-	/home/${username}/.xbmc/userdata/profiles.xml \
-	/home/${username}/.xbmc/userdata/sources.xml \
-	/home/${username}/.xbmc/userdata/RssFeeds.xml
+	/home/${user_name}/.asoundrc \
+	/home/${user_name}/.fdm.conf \
+	/home/${user_name}/.msmtprc \
+	/home/${user_name}/scripts/brasero.sh \
+	/home/${user_name}/scripts/firefox.sh \
+	/home/${user_name}/scripts/chrome.sh \
+	/home/${user_name}/.xbmc/userdata/advancedsettings.xml \
+	/home/${user_name}/.xbmc/userdata/guisettings.xml \
+	/home/${user_name}/.xbmc/userdata/LCD.xml \
+	/home/${user_name}/.xbmc/userdata/profiles.xml \
+	/home/${user_name}/.xbmc/userdata/sources.xml \
+	/home/${user_name}/.xbmc/userdata/RssFeeds.xml
 
 
 #[ -f xbmc-pfz-0.08.tar.bz2 ] || wget "http://hencvik.googlecode.com/files/xbmc-pfz-0.08.tar.bz2"
