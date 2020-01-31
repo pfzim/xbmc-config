@@ -19,6 +19,8 @@ idir=$(pwd)
 dm=fluxbox
 user_name=xbmc
 user_home=/home/xbmc
+required_commands="awk sed whiptail grep getent networkctl systemctl pacman wpa_supplicant wpa_cli"
+
 
 ask() {
 	while :
@@ -498,6 +500,7 @@ i_mc() {
 
 #read -p "Install XBMC plugins (Advanced Launcher) [Y/n]?" result
 i_plugins() {
+	echo SKIP
 	#wget http://mirrors.xbmc.org/addons/dharma/plugin.program.executor/plugin.program.executor-0.2.5.zip
 	#wget http://mirrors.xbmc.org/addons/dharma/plugin.program.launcher/plugin.program.launcher-1.10.2.zip
 	#unzip plugin.program.executor-0.2.5.zip -d /home/xbmc/.xbmc/addons/
@@ -1381,6 +1384,22 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
+failed=0
+
+echo 'Dependency checking...'
+for cmd in $(echo $required_commands | tr -s ' ' '\n')
+do
+	if ! command -v $cmd > /dev/null 2>&1 ; then
+		echo "  Not found: $cmd"
+		failed=1
+	fi
+done
+
+if [ $failed -ne 0 ] ; then
+	echo "Please install required tools"
+	exit 1
+fi
+
 c_user_pre
 
 [ -d xbmc_install ] || mkdir xbmc_install
@@ -1462,7 +1481,7 @@ i_dlna "Install MiniDLNA UPnP server" off \
 if [ $? -eq 0 ] ; then
 	for line in `cat ${temp_select}`
 	do
-		type ${line}_pre | grep "function" >/dev/null
+		type ${line}_pre 2>/dev/null | grep -q "function"
 		if [ $? -eq 0 ] ; then
 			old_title=${fg_title}
 			${line}_pre
@@ -1471,16 +1490,16 @@ if [ $? -eq 0 ] ; then
 	done
 
 	# test for internet connection
-	if ! eval "ping -c 1 archlinux.org" ; then
-		echo "No internet connection available!"
+	if ! ping -c 1 archlinux.org >/dev/null 2>&1 ; then
+		echo "No internet connection available! (ping to archlinux.org)"
 		rm -f $temp_select
 		cd ${idir}
-		exit
+		exit 1
 	fi
 
 	for line in `cat ${temp_select}`
 	do
-		type ${line} | grep "function" >/dev/null
+		type ${line} 2>/dev/null | grep -q "function"
 		if [ $? -eq 0 ] ; then
 			old_title=${fg_title}
 			${line}
