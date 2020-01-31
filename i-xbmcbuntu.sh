@@ -1104,7 +1104,7 @@ cc=
 
 if [ -n "\${from}" ] ; then
   echo \${from} | grep -qi "^${smtp_mail}"
-  if [ $? -ne 0 ] ; then
+  if [ \$? -ne 0 ] ; then
     cc="-b \"${smtp_mail}\""
   fi
 else
@@ -1148,9 +1148,9 @@ account "xbmc"
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s*\$" in headers actions { "rtorrent-add" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+audio\\\\s*\$" in headers actions { "rtorrent-add-audio" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+video\\\\s*\$" in headers actions { "rtorrent-add-video" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+list\\s*\$" in headers actions { "rtorrent-list" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+on\\s*\$" in headers actions { "rtorrent-alt-on" "drop" }
-match "^Subject:\\s+control:\\s+torrent\\s+alt\\s+speed\\s+off\\s*\$" in headers actions { "rtorrent-alt-off" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+list\\\\s*\$" in headers actions { "rtorrent-list" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+on\\\\s*\$" in headers actions { "rtorrent-alt-on" "drop" }
+match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+off\\\\s*\$" in headers actions { "rtorrent-alt-off" "drop" }
 match all action "keep"
 EOF
 
