@@ -17,24 +17,26 @@ chmod a+rx i-xbmcubuntu.sh
 sudo ./i-xbmcubuntu.sh
 ```
 
+# Installation
+
 Before you run this script you must install Arch linux as described in official wiki.
-At step when you run `pacstrap` install additional required tools `wpa_supplicant` and `libnewt`:
+At step when you run `pacstrap` install additional required tools `wpa_supplicant` and `libnewt` like this:
 ```
 pacstrap /mnt base linux linux-firmware intel-ucode wpa_supplicant libnewt lvm2 ntfs-3g git grub vim mc
 ```
 In `arch-chroot /mnt` environment download this script:
 ```
 cd /root
-git clone https://github.com/pfzim/xbmc-config.git
-cd xbmc-config
+curl -O https://raw.githubusercontent.com/pfzim/xbmc-config/master/i.sh
 chmod a+x i.sh
 ```
 After complete installation and reboot, run this script:
 ```
-cd /root/xbmc-config
+cd /root
 ./i.sh
 ```
 
+# Description
 
 Set timezone to Europe/Moscow
 
