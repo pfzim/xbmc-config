@@ -48,7 +48,7 @@ Configure network (systemd-networkd, wpa_supplicant, systemd-resolved)
 - Static
 - DHCP
 
-Install Network Manager
+Install Network Manager (only if skip previous systemd-networkd step)
 - For configure run `nmtui` after installation
 
 Install Midnight commander and console tools
