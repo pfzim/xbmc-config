@@ -88,14 +88,14 @@ Install torrent control through mail
 - Configure mailbox
 - Configure FDM for fetch mail every 15 minutes
 - FDM accept incomming mail with subjects:
- - control: torrent add
-   Save attached .torrent file to transmission watch directory
- - control: torrent list
-   Reply to sender information of currently transmisstion downloads
- - control: torrent alt speed on
-   Enable tranmission alt speed mode
- - control: torrent alt speed off
-   Disable tranmission alt speed mode
+    - control: torrent add
+        - Save attached .torrent file to transmission watch directory
+    - control: torrent list
+        - Reply to sender information of currently transmisstion downloads
+    - control: torrent alt speed on
+        - Enable tranmission alt speed mode
+    - control: torrent alt speed off
+        - Disable tranmission alt speed mode
 
 Configure XOrg
 - Configure XOrg for my old TV with resolution 1360x768 (99-screen.conf)
