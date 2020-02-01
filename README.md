@@ -19,7 +19,7 @@ sudo ./i-xbmcubuntu.sh
 
 # Installation
 
-Before you run this script you must install Arch linux as described in [official wiki](https://wiki.archlinux.org/index.php/Installation_guide)[2](https://pingvinus.ru/note/archlinux-install).
+Before you run this script you must install Arch linux as described in [official wiki](https://wiki.archlinux.org/index.php/Installation_guide) ([2](https://pingvinus.ru/note/archlinux-install)).
 At step when you run `pacstrap` install additional required tools `wpa_supplicant` and `libnewt` like this:
 ```
 pacstrap /mnt base linux linux-firmware intel-ucode wpa_supplicant libnewt lvm2 ntfs-3g git grub vim mc
