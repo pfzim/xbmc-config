@@ -169,7 +169,7 @@ ask_settings_ip() {
 		a_input "Enter DNS2 [$5]:" $5
 		a_input "Enter Metric [$6]:" $6
 
-		eval "a_yesno \"Network settings:\\n\\nIP: \$$1\nMask: \$$2\\nGateway: \$$3\\nDNS1: \$$4\\nDNS2: \$$5\\nMetric: \$$5\\n\\nEntered data correct?\" result"
+		eval "a_yesno \"Network settings:\\n\\nIP: \$$1\nMask: \$$2\\nGateway: \$$3\\nDNS1: \$$4\\nDNS2: \$$5\\nMetric: \$$6\\n\\nEntered data correct?\" result"
 		if [ "$result" = "Y" -o "$result" = "y" ] ; then
 			break
 		fi
@@ -384,7 +384,6 @@ c_net_pre() {
 
 				[Route]
 				Gateway=${net_gw}
-				Destination=${net_mask}
 				Metric=${net_metric}
 			END
 			)
