@@ -47,6 +47,7 @@ Configure network (systemd-networkd, wpa_supplicant, systemd-resolved)
 - Wireless (WPA, WEP, Open)
 - Static
 - DHCP
+- Enable Wake On LAN
 
 Install Network Manager (only if skip previous systemd-networkd step)
 - For configure run `nmtui` after installation

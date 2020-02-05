@@ -335,6 +335,23 @@ c_net_pre() {
 				END
 				)
 			fi
+		else
+			net_mac=$(cat /sys/class/net/${net_if}/address)
+			link_cfg=$(cat <<- END
+				[Match]
+				MACAddress=${net_mac}
+
+				[Link]
+				NamePolicy=keep kernel database onboard slot path
+				MACAddressPolicy=persistent
+				WakeOnLan=magic
+			END
+			)
+
+			a_yesno "/etc/systemd/network/90-wired-${net_if}.link\n${link_cfg}\n\nEnable Wake on LAN?" result "yes"
+			if [ "$result" = "Y" -o "$result" = "y" ] ; then
+				echo -ne "$link_cfg" > "/etc/systemd/network/90-wired-${net_if}.link"
+			fi
 		fi
 
 		a_yesno "Use DHCP?" result "yes"
@@ -477,7 +494,7 @@ c_ddns() {
 ############################
 
 i_mc() {
-	pacman -S --noconfirm --needed mc man bash-completion sudo cronie vim
+	pacman -S --noconfirm --needed mc man bash-completion sudo cronie vim ethtool
 
 	[ -f "/root/.inputrc" ] || cat > "/root/.inputrc" <<- END
 		"\e[A": history-search-backward
