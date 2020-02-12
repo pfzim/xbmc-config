@@ -793,9 +793,11 @@ c_bluez() {
 					dev_addr=$(cat $tempfile)
 
 					if [ "${dev_addr}" != "rescan" ] ; then
-						echo -ne "\n\nSomtimes bluetooth daemon crash. Then you need switch to other console Alt+F2 and run daemon again 'systemctl start bluetooth' for continue setup.\n\nPairing device...\n"
+						echo -ne "\n\nSomtimes bluetooth daemon crash. Then you need switch to other console Alt+F2 and run daemon again 'systemctl start bluetooth' for continue setup.\n\nPairing device ${dev_addr}...\n"
 						bluetoothctl -- pair ${dev_addr}
+						echo -ne "Trusting...\n"
 						bluetoothctl -- trust ${dev_addr}
+						echo -ne "Connecting...\n"
 						bluetoothctl -- connect ${dev_addr}
 					fi
 				fi
