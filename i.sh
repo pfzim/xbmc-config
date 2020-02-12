@@ -1483,7 +1483,7 @@ i_tbt "Install transmission-daemon" off \
 i_onboard "Install on screen keyboard (onboard)" off \
 i_ffox "Install Firefox" off \
 i_chrome "Install chromium browser" off \
-c_bluez "Configure bluetooth (somtimes crash/better run separately)" off \
+c_bluez "Configure bluetooth (somtimes crash/run separately)" off \
 i_cyrillic "Install cyrillic for console" off \
 i_httpd "Install HTTP server Apache, PHP" off \
 i_frw "iptables rules add" off \
