@@ -394,6 +394,7 @@ c_net_pre() {
 				Name=${net_if}
 
 				[Network]
+				DHCP=ipv6
 				${net_dns}
 
 				[Address]
@@ -792,6 +793,7 @@ c_bluez() {
 					dev_addr=$(cat $tempfile)
 
 					if [ "${dev_addr}" != "rescan" ] ; then
+						echo -ne "\n\nSomtimes bluetooth daemon crash. Then you need switch to other console Alt+F2 and run daemon again 'systemctl start bluetooth' for continue setup.\n\nPairing device...\n"
 						bluetoothctl -- pair ${dev_addr}
 						bluetoothctl -- trust ${dev_addr}
 						bluetoothctl -- connect ${dev_addr}
@@ -974,6 +976,7 @@ action "torrent-add-video" pipe "munpack -f -q -C ${torrent_dir}/video/ ; for i 
 action "torrent-list" pipe "${user_home}/scripts/control-reply.sh \"df -h ; transmission-remote -si -st -l\""
 action "torrent-alt-on" exec "transmission-remote --alt-speed"
 action "torrent-alt-off" exec "transmission-remote --no-alt-speed"
+action "poweroff" exec "sudo /usr/bin/shutdown -P +1"
 
 account "xbmc"
 				pop3s
@@ -990,6 +993,7 @@ match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+add\\\\s+video\\\\s*\$" in head
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+list\\\\s*\$" in headers actions { "torrent-list" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+on\\\\s*\$" in headers actions { "torrent-alt-on" "drop" }
 match "^Subject:\\\\s+control:\\\\s+torrent\\\\s+alt\\\\s+speed\\\\s+off\\\\s*\$" in headers actions { "torrent-alt-off" "drop" }
+match "^Subject:\\\\s+control:\\\\s+poweroff\\\\s*\$" in headers actions { "poweroff" "drop" }
 match all action "keep"
 EOF
 
@@ -1479,7 +1483,7 @@ i_tbt "Install transmission-daemon" off \
 i_onboard "Install on screen keyboard (onboard)" off \
 i_ffox "Install Firefox" off \
 i_chrome "Install chromium browser" off \
-c_bluez "Configure bluetooth" off \
+c_bluez "Configure bluetooth (somtimes crash/better run separately)" off \
 i_cyrillic "Install cyrillic for console" off \
 i_httpd "Install HTTP server Apache, PHP" off \
 i_frw "iptables rules add" off \
