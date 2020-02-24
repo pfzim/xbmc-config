@@ -256,12 +256,12 @@ c_net_pre() {
 
 			wpa_supplicant -B -i${net_if} -c/etc/wpa_supplicant/wpa_supplicant.conf
 			wpa_cli -i${net_if} scan
-			echo "Wait for 5 seconds. Scanning WiFi..."
-			sleep 5
+			echo "Wait for 7 seconds. Scanning WiFi..."
+			sleep 7
 
 			# list_items = <SSID>;ap_type=<WPA|WEP|OPEN>
 			list_items=$(wpa_cli -i${net_if} scan_results | awk '{
-				if(NR > 2)
+				if(NR > 1)
 				{
 					if(match($4, /WEP|WPA/, m))
 					{
