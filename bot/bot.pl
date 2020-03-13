@@ -4,8 +4,8 @@ use strict;
 use warnings;
 
 use JSON::PP;
-use LWP::UserAgent;
-use File::Slurp;
+use CPAN::LWP::UserAgent;
+#use File::Slurp;
 
 sub in_array
 {
@@ -22,7 +22,13 @@ sub in_array
 	return 0;
 }
 
-my $text = read_file('bot.conf');
+#my $text = read_file('bot.conf');
+my $text = do {
+   open(my $json_fh, "<:encoding(UTF-8)", 'bot.conf')
+      or die("Can't open bot.conf: $!\n");
+   local $/;
+   <$json_fh>
+};
 
 print "file:\n\n".$text."\n\n";
 
@@ -33,7 +39,7 @@ sub http_save
 {
 	my ($url, $file) = @_;
 
-	my $ua = LWP::UserAgent->new(timeout => 30);
+	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->get($url, ':content_file'  => $file);
 
@@ -53,7 +59,7 @@ sub get_json
 {
 	my ($url) = @_;
 
-	my $ua = LWP::UserAgent->new(timeout => 30);
+	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->get($url);
 
@@ -74,7 +80,7 @@ sub post_json
 {
 	my ($url, $data) = @_;
 
-	my $ua = LWP::UserAgent->new(timeout => 30);
+	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->post($url, $data);
 
@@ -113,7 +119,14 @@ if($data && $data->{ok})
 		{
 			if($update->{message}{text} && $update->{message}{text} eq '/poweroff')
 			{
-				#system('sudo shutdown -p +1');
+				post_json(
+					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
+					{
+						chat_id => $update->{message}{chat}{id},
+						text => 'System go down'
+					}
+				);
+				#system('sudo /usr/bin/shutdown -P +1');
 			}
 			if($update->{message}{document})
 			{
@@ -138,7 +151,7 @@ if($data && $data->{ok})
 								chat_id => $update->{message}{chat}{id},
 								text => 'Torrent was added: '.$filename
 							}
-				);
+						);
 					}
 				}
 			}
