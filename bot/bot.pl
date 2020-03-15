@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use JSON::PP;
-use CPAN::LWP::UserAgent;
+use LWP::UserAgent;
 #use File::Slurp;
 
 sub in_array
@@ -39,7 +39,7 @@ sub http_save
 {
 	my ($url, $file) = @_;
 
-	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
+	my $ua = LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->get($url, ':content_file'  => $file);
 
@@ -59,7 +59,7 @@ sub get_json
 {
 	my ($url) = @_;
 
-	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
+	my $ua = LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->get($url);
 
@@ -80,7 +80,7 @@ sub post_json
 {
 	my ($url, $data) = @_;
 
-	my $ua = CPAN::LWP::UserAgent->new(timeout => 30);
+	my $ua = LWP::UserAgent->new(timeout => 30);
 
 	my $response = $ua->post($url, $data);
 
@@ -174,6 +174,7 @@ if($data && $data->{ok})
 
 open(CONF, '>', 'bot.conf');
 
-print(CONF encode_json($config));
+#print(CONF encode_json($config));
+print(CONF JSON::PP->new->pretty->encode($config));
 
 close(CONF);
