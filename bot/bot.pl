@@ -97,6 +97,20 @@ sub post_json
 	return 0;
 }
 
+if($#ARGV >= 0 && $ARGV[0] eq '--boot')
+{
+	foreach my $chat_id ( @{ $config->{admins_chats} })
+	{
+		post_json(
+			'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
+			{
+				chat_id => $chat_id,
+				text => 'System was power on'
+			}
+		);
+	}
+}
+
 my $data = post_json(
 	'https://api.telegram.org/bot'.$config->{bot_token}.'/getUpdates',
 	{
