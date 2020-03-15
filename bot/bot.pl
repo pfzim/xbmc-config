@@ -142,6 +142,18 @@ if($data && $data->{ok})
 				);
 				#system('sudo /usr/bin/shutdown -P +1');
 			}
+			elsif($update->{message}{text} && $update->{message}{text} eq '/ping')
+			{
+				post_json(
+					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
+					{
+						chat_id => $update->{message}{chat}{id},
+						text => 'OK'
+					}
+				);
+				#system('sudo /usr/bin/shutdown -P +1');
+			}
+
 			if($update->{message}{document})
 			{
 				if($update->{message}{document}{file_name} !~ /\.torrent$/)
