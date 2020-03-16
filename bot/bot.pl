@@ -155,17 +155,16 @@ if($data && $data->{ok})
 			}
 			elsif($update->{message}{text} && $update->{message}{text} =~ '^magnet:[^"]+$')
 			{
+				system('transmission-remote -a "'.$update->{message}{text}.'"');
 				post_json(
 					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
 					{
 						chat_id => $update->{message}{chat}{id},
-						text => 'OK'
+						text => 'Torrent added'
 					}
 				);
-				system('transmission-remote -a "'.$update->{message}{text}.'"');
 			}
-
-			if($update->{message}{document})
+			elsif($update->{message}{document})
 			{
 				if($update->{message}{document}{file_name} !~ /\.torrent$/)
 				{
@@ -192,6 +191,16 @@ if($data && $data->{ok})
 					}
 				}
 			}
+			else
+			{
+				post_json(
+					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
+					{
+						chat_id => $update->{message}{chat}{id},
+						text => 'Unknown command'
+					}
+				);
+			}
 		}
 		else
 		{
@@ -201,7 +210,9 @@ if($data && $data->{ok})
 					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
 					{
 						chat_id => $chat_id,
-						text => 'New unknown user: '.$update->{message}{from}{id}
+						text =>
+							'New unknown user: '.$update->{message}{from}{id}."\n".
+							'Message: '.$update->{message}{text}
 					}
 				);
 			}
