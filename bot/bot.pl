@@ -210,9 +210,10 @@ if($data && $data->{ok})
 					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
 					{
 						chat_id => $chat_id,
+						parse_mode => 'HTML',
 						text =>
 							'New unknown user: '.$update->{message}{from}{id}."\n".
-							'Message: '.$update->{message}{text}
+							'Message: <pre>'.$update->{message}{text}.'</pre>'
 					}
 				);
 			}
