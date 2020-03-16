@@ -99,6 +99,7 @@ sub post_json
 
 if($#ARGV >= 0 && $ARGV[0] eq '--boot')
 {
+	sleep(30);
 	foreach my $chat_id ( @{ $config->{admins_chats} })
 	{
 		post_json(
@@ -140,7 +141,7 @@ if($data && $data->{ok})
 						text => 'System go down'
 					}
 				);
-				#system('sudo /usr/bin/shutdown -P +1');
+				system('sudo /usr/bin/shutdown -P +1');
 			}
 			elsif($update->{message}{text} && $update->{message}{text} eq '/ping')
 			{
@@ -151,7 +152,17 @@ if($data && $data->{ok})
 						text => 'OK'
 					}
 				);
-				#system('sudo /usr/bin/shutdown -P +1');
+			}
+			elsif($update->{message}{text} && $update->{message}{text} =~ '^magnet:[^"]+$')
+			{
+				post_json(
+					'https://api.telegram.org/bot'.$config->{bot_token}.'/sendMessage',
+					{
+						chat_id => $update->{message}{chat}{id},
+						text => 'OK'
+					}
+				);
+				system('transmission-remote -a "'.$update->{message}{text}.'"');
 			}
 
 			if($update->{message}{document})
