@@ -212,8 +212,8 @@ if($data && $data->{ok})
 						chat_id => $chat_id,
 						parse_mode => 'HTML',
 						text =>
-							'New unknown user: '.$update->{message}{from}{id}."\n".
-							'Message: <pre>'.$update->{message}{text}.'</pre>'
+							'New unknown user'."\n".
+							'JSON: <pre>'.JSON::PP->new->pretty->encode($update).'</pre>'."\n"
 					}
 				);
 			}
