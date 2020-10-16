@@ -1,4 +1,4 @@
-# Kodi 18.5 install and configure on fresh Arch Linux installation
+# [Kodi 18.5 install and configure on fresh Arch Linux installation](https://github.com/pfzim/xbmc-config/)
 
 Install Arch Linux as described in official instruction
 Download `i.sh` script and run it
