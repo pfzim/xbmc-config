@@ -932,6 +932,11 @@ i_fdm() {
 	systemctl enable cronie
 	systemctl start cronie
 
+	if [ ! -d "${user_home}/scripts" ] ; then
+		mkdir "${user_home}/scripts"
+		chmod a+rx "${user_home}/scripts"
+	fi
+
 	if [ ! -f "${user_home}/scripts/control-reply.sh" ] ; then
 		cat > "${user_home}/scripts/control-reply.sh" << EOF
 #!/bin/sh

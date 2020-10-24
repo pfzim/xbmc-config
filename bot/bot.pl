@@ -153,7 +153,7 @@ if($data && $data->{ok})
 					}
 				);
 			}
-			elsif($update->{message}{text} && $update->{message}{text} =~ '^magnet:[^"]+$')
+			elsif($update->{message}{text} && $update->{message}{text} =~ '^magnet:[^\\"]+$')
 			{
 				system('transmission-remote -a "'.$update->{message}{text}.'"');
 				post_json(
