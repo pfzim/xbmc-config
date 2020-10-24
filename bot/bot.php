@@ -98,7 +98,7 @@ function http_save($url, $path)
 				continue;
 			}
 
-			$config['offset'] = $update_id + 1;
+			$config['offset'] = $update['update_id'] + 1;
 			
 			if(in_array($update['message']['from']['id'], $config['allowed_users']))
 			{
@@ -106,7 +106,7 @@ function http_save($url, $path)
 				{
 					$response = array(
 						'method' => 'sendMessage',
-						'chat_id' => $chat_id,
+						'chat_id' => $update['message']['chat']['id'],
 						'text' => 'System go down',
 						'parse_mode' => 'Markdown'
 					);
@@ -119,7 +119,7 @@ function http_save($url, $path)
 				{
 					$response = array(
 						'method' => 'sendMessage',
-						'chat_id' => $chat_id,
+						'chat_id' => $update['message']['chat']['id'],
 						'text' => 'OK',
 						'parse_mode' => 'Markdown'
 					);
@@ -132,7 +132,7 @@ function http_save($url, $path)
 					
 					$response = array(
 						'method' => 'sendMessage',
-						'chat_id' => $chat_id,
+						'chat_id' => $update['message']['chat']['id'],
 						'text' => 'Torrent added',
 						'parse_mode' => 'Markdown'
 					);
@@ -145,7 +145,7 @@ function http_save($url, $path)
 					{
 						$response = array(
 							'method' => 'sendMessage',
-							'chat_id' => $chat_id,
+							'chat_id' => $update['message']['chat']['id'],
 							'text' => 'Accept only .torrent files!',
 							'parse_mode' => 'Markdown'
 						);
@@ -155,7 +155,7 @@ function http_save($url, $path)
 					else
 					{
 						$response = array(
-							'file_id' => update['message']['document']['file_id']
+							'file_id' => $update['message']['document']['file_id']
 						);
 						
 						$response = json_decode(http(API_URL.'getFile', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)), true);
@@ -168,13 +168,13 @@ function http_save($url, $path)
 							preg_replace('/[^a-zA-Z0-9_\-. \[\]\(\)]/i', '', $filename);
 							preg_replace('/^[_\-. ]+/i', '', $filename);
 
-							http_save(API_URL.'/'.$response['result']['file_path'], DOWNLOAD_PATH.'/'.$filename);
+							http_save('https://api.telegram.org/file/bot'.$config['bot_token'].'/'.$response['result']['file_path'], $config['download_path'].'/'.$filename);
 
 							$response = array(
 								'method' => 'sendMessage',
-								'chat_id' => $chat_id,
-								'text' => 'Torrent was added: '.$filename,
-								'parse_mode' => 'Markdown'
+								'chat_id' => $update['message']['chat']['id'],
+								'text' => 'Torrent was added: <pre>'.htmlspecialchars($filename).'</pre>',
+								'parse_mode' => 'HTML'
 							);
 
 							http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -185,7 +185,7 @@ function http_save($url, $path)
 				{
 					$response = array(
 						'method' => 'sendMessage',
-						'chat_id' => $chat_id,
+						'chat_id' => $update['message']['chat']['id'],
 						'text' => 'Unknown command',
 						'parse_mode' => 'Markdown'
 					);
