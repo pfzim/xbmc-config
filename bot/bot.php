@@ -75,7 +75,7 @@ function http_save($url, $path)
 			$response = array(
 				'method' => 'sendMessage',
 				'chat_id' => $chat_id,
-				'text' => 'System was power on',
+				'text' => $config['system_name'].': System was power on',
 				'parse_mode' => 'Markdown'
 			);
 
@@ -107,7 +107,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => 'System go down',
+						'text' => $config['system_name'].': System go down',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -120,7 +120,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => 'OK',
+						'text' => $config['system_name'].': OK',
 						'parse_mode' => 'Markdown'
 					);
 
