@@ -1,7 +1,7 @@
 <?php
 /*
     xbmc_bot - Telegram bot
-    Copyright (C) 2019 Dmitry V. Zimin
+    Copyright (C) 2020 Dmitry V. Zimin
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,12 +17,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-if(!file_exists('inc.config.php'))
+if(!defined('ROOTDIR'))
 {
-	exit;
+	define('ROOTDIR', dirname(__FILE__));
 }
-
-require_once("inc.config.php");
 
 function http($url, $data)
 {
@@ -61,9 +59,18 @@ function http_save($url, $path)
 	error_reporting(E_ALL);
 	define("Z_PROTECTED", "YES");
 	
-	if(BOOT)
+	if(!file_exists(ROOTDIR.DIRECTORY_SEPARATOR.'bot.conf'))
 	{
-		foreach(BOT_ADMIN_CHATS as &$chat_id)
+		exit;
+	}
+	
+	$config = json_decode(file_get_contents(ROOTDIR.DIRECTORY_SEPARATOR.'bot.conf'), true);
+	
+	define('API_URL', 'https://api.telegram.org/bot'.$config['bot_token'].'/');
+	
+	if((php_sapi_name() == 'cli') && ($argc > 1) && ($argv[1] == '--boot'))
+	{
+		foreach($config['admins_chats'] as &$chat_id)
 		{
 			$response = array(
 				'method' => 'sendMessage',
@@ -77,7 +84,7 @@ function http_save($url, $path)
 	}
 
 	$response = array(
-		'offset' => $offset
+		'offset' => $config['offset']
 	);
 
 	$data = json_decode(http(API_URL.'getUpdates', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)), true);
@@ -91,9 +98,9 @@ function http_save($url, $path)
 				continue;
 			}
 
-			$offset = $update_id + 1;
+			$config['offset'] = $update_id + 1;
 			
-			if(in_array($update['message']['from']['id', BOT_ALLOWED_USERS))
+			if(in_array($update['message']['from']['id'], $config['allowed_users']))
 			{
 				if(!empty($update['message']['text']) && $update['message']['text'] == '/poweroff')
 				{
@@ -188,7 +195,7 @@ function http_save($url, $path)
 			}
 			else
 			{
-				foreach(BOT_ADMIN_CHATS as &$chat_id)
+				foreach($config['admins_chats'] as &$chat_id)
 				{
 					$response = array(
 						'method' => 'sendMessage',
@@ -202,6 +209,8 @@ function http_save($url, $path)
 				}
 			}
 		}
+		
+		file_put_contents(ROOTDIR.DIRECTORY_SEPARATOR.'bot.conf', json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 	}
 	
 /*
