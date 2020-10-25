@@ -104,14 +104,17 @@ function http_save($url, $path)
 			{
 				if(!empty($update['message']['text']) && $update['message']['text'] == '/poweroff')
 				{
-					$response = array(
-						'method' => 'sendMessage',
-						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': System go down',
-						'parse_mode' => 'Markdown'
-					);
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => chat_id,
+							'text' => $config['system_name'].': System go down',
+							'parse_mode' => 'Markdown'
+						);
 
-					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
 					
 					system('sudo /usr/bin/shutdown -P +1');
 				}
@@ -125,6 +128,39 @@ function http_save($url, $path)
 					);
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_start')
+				{
+					system('sudo systemctl start motion');
+					
+					
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': Motion started',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_stop')
+				{
+					system('sudo systemctl stop motion');
+					
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': Motion stopped',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
 				}
 				elseif(!empty($update['message']['text']) && preg_match('/^magnet:[^\\"]+$/', $update['message']['text']))
 				{
