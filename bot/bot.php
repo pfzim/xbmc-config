@@ -139,7 +139,7 @@ function http_save($url, $path)
 						$response = array(
 							'method' => 'sendMessage',
 							'chat_id' => $chat_id,
-							'text' => $config['system_name'].': Motion started',
+							'text' => $config['system_name'].': Motion starting...',
 							'parse_mode' => 'Markdown'
 						);
 
@@ -155,12 +155,25 @@ function http_save($url, $path)
 						$response = array(
 							'method' => 'sendMessage',
 							'chat_id' => $chat_id,
-							'text' => $config['system_name'].': Motion stopped',
+							'text' => $config['system_name'].': Motion stopping...',
 							'parse_mode' => 'Markdown'
 						);
 
 						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 					}
+				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_status')
+				{
+					$output = system('sudo systemctl show motion -p ActiveState');
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Motion status: <pre>'.htmlspecialchars($output).'</pre>',
+						'parse_mode' => 'HTML'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
 				elseif(!empty($update['message']['text']) && preg_match('/^magnet:[^\\"]+$/', $update['message']['text']))
 				{
