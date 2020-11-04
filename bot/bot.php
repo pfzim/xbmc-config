@@ -251,9 +251,8 @@ function http_save($url, $path)
 						if($response && $response['result']['file_path'])
 						{
 							$filename = $update['message']['document']['file_name'];
-							$filename = preg_replace('/\.torrent$/', '', $filename);
-							$filename = $filename.'['.$update['message']['document']['file_unique_id'].'].torrent';
-							$filename = preg_replace('/[^a-zA-Z0-9_\-. \[\]\(\)]/i', '', $filename);
+							$filename = preg_replace('/\.torrent$/', '['.$update['message']['document']['file_unique_id'].'].torrent', $filename);
+							//$filename = preg_replace('/[^a-zA-Z0-9_\-. \[\]\(\)]/i', '', $filename);
 							$filename = preg_replace('/^[_\-. ]+/i', '', $filename);
 
 							http_save('https://api.telegram.org/file/bot'.$config['bot_token'].'/'.$response['result']['file_path'], $config['download_path'].'/'.$filename);
