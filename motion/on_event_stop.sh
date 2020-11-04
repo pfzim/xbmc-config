@@ -8,13 +8,13 @@
   . /opt/motion/config.conf
 
   ut=`date +%s`
-  ls=`cat /tmp/on_event_stop.last` || ls=0
+  ls=`cat /tmp/on_event_stop_$1.last` || ls=0
   dif=$((ut - ls))
   if [ $dif -gt 10 ]; then
-    echo $ut > /tmp/on_event_stop.last
+    echo $ut > /tmp/on_event_stop_$1.last
     dt=`date`
     ic=`echo -e "\xF0\x9F\x9A\xB7"`
-    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=$ic Event stop at $dt"
+    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=$ic Event stop at $dt&disable_notification=true"
   fi
 
-) 9> /tmp/on_event_stop.lock
+) 9> /tmp/on_event_stop_$1.lock

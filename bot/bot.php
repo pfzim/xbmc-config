@@ -24,7 +24,7 @@ if(!defined('ROOTDIR'))
 
 function http($url, $data)
 {
-	error_log('S: '.$data."\r\n\r\n", 3, "error.log");
+	//error_log('S: '.$data."\r\n\r\n", 3, "/tmp/error.log");
 
 	$curl = curl_init();
 
@@ -38,7 +38,7 @@ function http($url, $data)
 	$response = curl_exec($curl);
 	curl_close($curl);
 
-	error_log('A: '.$response."\r\n\r\n", 3, "error.log");
+	//error_log('A: '.$response."\r\n\r\n", 3, "/tmp/error.log");
 
 	return $response;
 }
@@ -171,6 +171,32 @@ function http_save($url, $path)
 						'chat_id' => $update['message']['chat']['id'],
 						'text' => $config['system_name'].': Motion status: <pre>'.htmlspecialchars($output).'</pre>',
 						'parse_mode' => 'HTML'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_enable (\d+)$/', $update['message']['text'], $matches))
+				{
+					system('sudo /opt/motion/on_cam_enable.sh '.intval($matches[1]), $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Camera enabled (exit code: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_disable (\d+)$/', $update['message']['text'], $matches))
+				{
+					system('sudo /opt/motion/on_cam_disable.sh '.intval($matches[1]), $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Camera disabled (exit code: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
 					);
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
