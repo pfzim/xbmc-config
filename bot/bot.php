@@ -201,6 +201,19 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/cam_shot')
+				{
+					system('sudo /opt/motion/on_snapshot.sh', $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Make camera snapshot (exit code: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
 				elseif(!empty($update['message']['text']) && preg_match('/^magnet:[^\\"]+$/', $update['message']['text']))
 				{
 					system('transmission-remote -a "'.$update['message']['text'].'"');
