@@ -7,6 +7,8 @@
     exit 0
   fi
 
+  [ -e /tmp/cam_${2}_events.disable ] && exit 0
+
   . /opt/motion/config.conf
 
   ut=`date +%s`

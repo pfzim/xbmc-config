@@ -182,7 +182,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': Camera enabled (exit code: '.$exit_code.')',
+						'text' => $config['system_name'].': Camera enabled (EC: '.$exit_code.')',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -195,7 +195,59 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': Camera disabled (exit code: '.$exit_code.')',
+						'text' => $config['system_name'].': Camera disabled (EC: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/cam_record_enable')
+				{
+					system('sudo /opt/motion/on_cam_record_enable.sh', $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Record enabled (EC: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/cam_record_disable')
+				{
+					system('sudo /opt/motion/on_cam_record_disable.sh', $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Record disabled (EC: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_events_enable (\d+)$/', $update['message']['text'], $matches))
+				{
+					system('/opt/motion/on_cam_events_enable.sh '.intval($matches[1]), $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Camera events enabled (EC: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_events_disable (\d+)$/', $update['message']['text'], $matches))
+				{
+					system('/opt/motion/on_cam_events_disable.sh '.intval($matches[1]), $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Camera events disabled (EC: '.$exit_code.')',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -208,7 +260,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': Make camera snapshot (exit code: '.$exit_code.')',
+						'text' => $config['system_name'].': Make camera snapshot (EC: '.$exit_code.')',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -221,7 +273,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => 'Torrent added',
+						'text' => $config['system_name'].': Torrent added',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -234,7 +286,7 @@ function http_save($url, $path)
 						$response = array(
 							'method' => 'sendMessage',
 							'chat_id' => $update['message']['chat']['id'],
-							'text' => 'Accept only .torrent files!',
+							'text' => $config['system_name'].': Accept only .torrent files!',
 							'parse_mode' => 'Markdown'
 						);
 
@@ -260,7 +312,7 @@ function http_save($url, $path)
 							$response = array(
 								'method' => 'sendMessage',
 								'chat_id' => $update['message']['chat']['id'],
-								'text' => 'Torrent was added: <pre>'.htmlspecialchars($filename).'</pre>',
+								'text' => $config['system_name'].': Torrent was added: <pre>'.htmlspecialchars($filename).'</pre>',
 								'parse_mode' => 'HTML'
 							);
 
@@ -273,7 +325,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => 'Unknown command',
+						'text' => $config['system_name'].': Unknown command',
 						'parse_mode' => 'Markdown'
 					);
 
@@ -287,7 +339,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $chat_id,
-						'text' => 	'New unknown user'."\n".
+						'text' => 	$config['system_name'].': New unknown user'."\n".
 									'JSON: <pre>'.json_encode($update, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE).'</pre>'."\n",
 						'parse_mode' => 'HTML'
 					);
