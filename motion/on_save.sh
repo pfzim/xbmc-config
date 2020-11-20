@@ -8,7 +8,7 @@ trap "rm -f '$2'" 1 2 3 8 9 15
     exit 0
   fi
 
-  if [ -e /tmp/cam_${1}_events.disable ] ; then
+  if [ -e /tmp/cam_${1}_events.disable -a ! -e /tmp/on_snapshot_camera${1}.conf ] ; then
     rm -f "$2"
     exit 0
   fi
@@ -30,5 +30,6 @@ trap "rm -f '$2'" 1 2 3 8 9 15
   fi
 
   rm -f "$2"
+  [ -e /tmp/on_snapshot_camera${1}.conf ] && rm -f /tmp/on_snapshot_camera${1}.conf
 
 ) 9> /tmp/on_save_$1.lock

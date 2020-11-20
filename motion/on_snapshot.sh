@@ -1,5 +1,13 @@
 #!/bin/sh
 
+for fn in /etc/motion/conf.d/*.conf
+do
+  if [ -f $fn ] ; then
+    fn=`basename $fn`
+    touch /tmp/on_snapshot_${fn}
+    chown motion:motion /tmp/on_snapshot_${fn}
+  fi
+done
 
 pid=`pidof -s motion`
 
