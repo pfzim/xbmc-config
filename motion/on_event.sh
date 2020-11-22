@@ -7,7 +7,7 @@
     exit 0
   fi
 
-  [ "$4" != "force" -a -e /tmp/cam_${2}_events.disable ] && exit 0
+  [ "$4" != "force" -a -e /opt/motion/flags/cam_${2}_events.disable ] && exit 0
 
   . /opt/motion/config.conf
 
