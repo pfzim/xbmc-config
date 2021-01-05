@@ -12,14 +12,14 @@
 # --wget http://hencvik.googlecode.com/files/i.sh
 # --./i.sh 2>&1 | tee i.log
 
-back_title="XBMC 18.5 post installation configuration script v0.09.01 (c) pfzim"
+back_title="XBMC 18.5 post installation configuration script v0.09.02 (c) pfzim"
 fg_title="XBMC configuration"
 DIALOG=whiptail
 idir=$(pwd)
 dm=fluxbox
 user_name=xbmc
 user_home=/home/xbmc
-required_commands="awk sed whiptail grep getent networkctl systemctl pacman wpa_supplicant wpa_cli"
+required_commands="awk sed ${DIALOG} grep getent networkctl systemctl pacman wpa_supplicant wpa_cli"
 
 
 ask() {
@@ -366,7 +366,10 @@ c_net_pre() {
 				[Network]
 				DHCP=yes
 
-				[DHCPV4]
+				[DHCPv4]
+				RouteMetric=${net_metric}
+
+				[DHCPv6]
 				RouteMetric=${net_metric}
 			END
 			)
@@ -396,6 +399,9 @@ c_net_pre() {
 				[Network]
 				DHCP=ipv6
 				${net_dns}
+
+				[DHCPv6]
+				RouteMetric=${net_metric}
 
 				[Address]
 				Address=${net_ip}/${net_prefix}
@@ -1518,10 +1524,13 @@ if [ $? -eq 0 ] ; then
 
 	# test for internet connection
 	if ! ping -c 1 archlinux.org >/dev/null 2>&1 ; then
-		echo "No internet connection available! (ping to archlinux.org)"
-		rm -f $temp_select
-		cd ${idir}
-		exit 1
+		a_yesno "No internet connection available! (ping to archlinux.org)\nContinue without internet connection?" result "yes"
+		if [ "$result" = "N" -o "$result" = "n" ] ; then
+			echo "No internet connection available! (ping to archlinux.org)"
+			rm -f $temp_select
+			cd ${idir}
+			exit 1
+		fi
 	fi
 
 	for line in `cat ${temp_select}`
@@ -1538,3 +1547,4 @@ fi
 rm -f $temp_select
 
 cd ${idir}
+
