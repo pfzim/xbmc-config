@@ -102,21 +102,24 @@ function http_save($url, $path)
 			
 			if(in_array($update['message']['from']['id'], $config['allowed_users']))
 			{
-				if(!empty($update['message']['text']) && $update['message']['text'] == '/poweroff')
+				if(!empty($update['message']['text']) && preg_match('/^\\/poweroff (\\w+)$/', $update['message']['text'], $matches))
 				{
-					foreach($config['admins_chats'] as &$chat_id)
+					if($matches[1] === $config['system_name'])
 					{
-						$response = array(
-							'method' => 'sendMessage',
-							'chat_id' => chat_id,
-							'text' => $config['system_name'].': System go down',
-							'parse_mode' => 'Markdown'
-						);
+						foreach($config['admins_chats'] as &$chat_id)
+						{
+							$response = array(
+								'method' => 'sendMessage',
+								'chat_id' => chat_id,
+								'text' => $config['system_name'].': System go down',
+								'parse_mode' => 'Markdown'
+							);
 
-						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+							http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						}
+						
+						system('sudo /usr/bin/shutdown -P +1');
 					}
-					
-					system('sudo /usr/bin/shutdown -P +1');
 				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/ping')
 				{
@@ -129,36 +132,42 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_start')
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/motion_start (\\w+)$/', $update['message']['text'], $matches))
 				{
-					system('sudo systemctl start motion');
-
-					foreach($config['admins_chats'] as &$chat_id)
+					if($matches[1] === $config['system_name'])
 					{
-						$response = array(
-							'method' => 'sendMessage',
-							'chat_id' => $chat_id,
-							'text' => $config['system_name'].': Motion starting...',
-							'parse_mode' => 'Markdown'
-						);
+						system('sudo systemctl start motion');
 
-						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						foreach($config['admins_chats'] as &$chat_id)
+						{
+							$response = array(
+								'method' => 'sendMessage',
+								'chat_id' => $chat_id,
+								'text' => $config['system_name'].': Motion starting...',
+								'parse_mode' => 'Markdown'
+							);
+
+							http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						}
 					}
 				}
-				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_stop')
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/motion_stop (\\w+)$/', $update['message']['text'], $matches))
 				{
-					system('sudo systemctl stop motion');
-					
-					foreach($config['admins_chats'] as &$chat_id)
+					if($matches[1] === $config['system_name'])
 					{
-						$response = array(
-							'method' => 'sendMessage',
-							'chat_id' => $chat_id,
-							'text' => $config['system_name'].': Motion stopping...',
-							'parse_mode' => 'Markdown'
-						);
+						system('sudo systemctl stop motion');
+						
+						foreach($config['admins_chats'] as &$chat_id)
+						{
+							$response = array(
+								'method' => 'sendMessage',
+								'chat_id' => $chat_id,
+								'text' => $config['system_name'].': Motion stopping...',
+								'parse_mode' => 'Markdown'
+							);
 
-						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+							http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						}
 					}
 				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_status')
