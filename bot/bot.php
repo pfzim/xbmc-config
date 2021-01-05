@@ -132,8 +132,7 @@ function http_save($url, $path)
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/motion_start')
 				{
 					system('sudo systemctl start motion');
-					
-					
+
 					foreach($config['admins_chats'] as &$chat_id)
 					{
 						$response = array(
@@ -253,6 +252,46 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/add_user (-?\d+)$/', $update['message']['text'], $matches))
+				{
+					array_push($config['allowed_users'], $matches[1]);
+					
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': New user '.$matches[1].' added',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\/del_user (-?\d+)$/', $update['message']['text'], $matches))
+				{
+					if(($key = array_search($matches[1], $config['allowed_users'])) !== FALSE)
+					{
+						unset($config['allowed_users'][$key]);
+						$msg = 'User '.$matches[1].' deleted';
+					}
+					else
+					{
+						$msg = 'User '.$matches[1].' not found!';
+					}
+
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': '.$msg,
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/cam_shot')
 				{
 					system('sudo /opt/motion/on_snapshot.sh', $exit_code);
@@ -281,7 +320,18 @@ function http_save($url, $path)
 				}
 				elseif($update['message']['document'])
 				{
-					if(!preg_match('/\.torrent$/', $update['message']['document']['file_name']))
+					if(empty($config['download_path']))
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $update['message']['chat']['id'],
+							'text' => $config['system_name'].': download_path undefined!',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+					elseif(!preg_match('/\.torrent$/', $update['message']['document']['file_name']))
 					{
 						$response = array(
 							'method' => 'sendMessage',
