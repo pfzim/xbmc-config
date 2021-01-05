@@ -174,7 +174,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_enable (\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_enable (\\d+)$/', $update['message']['text'], $matches))
 				{
 					system('sudo /opt/motion/on_cam_enable.sh '.intval($matches[1]), $exit_code);
 					
@@ -187,7 +187,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_disable (\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_disable (\\d+)$/', $update['message']['text'], $matches))
 				{
 					system('sudo /opt/motion/on_cam_disable.sh '.intval($matches[1]), $exit_code);
 					
@@ -226,7 +226,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_events_enable (\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_events_enable (\\d+)$/', $update['message']['text'], $matches))
 				{
 					system('/opt/motion/on_cam_events_enable.sh '.intval($matches[1]), $exit_code);
 					
@@ -239,7 +239,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/cam_events_disable (\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_events_disable (\\d+)$/', $update['message']['text'], $matches))
 				{
 					system('/opt/motion/on_cam_events_disable.sh '.intval($matches[1]), $exit_code);
 					
@@ -252,23 +252,110 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/add_user (-?\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/iamadmin (\\w{5})$/', $update['message']['text'], $matches))
 				{
-					array_push($config['allowed_users'], $matches[1]);
+					if(substr($config['bot_token'], -1, 5) === $matches[1])
+					{
+						if(array_search($update['message']['from']['id'], $config['allowed_users']) === FALSE)
+						{
+							array_push($config['allowed_users'], $update['message']['from']['id']);
+							$msg = 'New user '.$update['message']['from']['id'].' added';
+						}
+						else
+						{
+							$msg = 'User '.$update['message']['from']['id'].' already exist!';
+						}
+					}
+					else
+					{
+						$msg = 'Invalid key '.$matches[1].'!';
+					}
 					
 					foreach($config['admins_chats'] as &$chat_id)
 					{
 						$response = array(
 							'method' => 'sendMessage',
 							'chat_id' => $chat_id,
-							'text' => $config['system_name'].': New user '.$matches[1].' added',
+							'text' => $config['system_name'].': '.$msg,
 							'parse_mode' => 'Markdown'
 						);
 
 						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 					}
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\/del_user (-?\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/add_chat (-?\\d+)$/', $update['message']['text'], $matches))
+				{
+					if(array_search($matches[1], $config['admins_chats']) === FALSE)
+					{
+						array_push($config['admins_chats'], $matches[1]);
+						$msg = 'Admin chat '.$matches[1].' added';
+					}
+					else
+					{
+						$msg = 'Admin chat '.$matches[1].' already exist!';
+					}
+					
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': '.$msg,
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/del_chat (-?\\d+)$/', $update['message']['text'], $matches))
+				{
+					if(($key = array_search($matches[1], $config['admins_chats'])) !== FALSE)
+					{
+						unset($config['admins_chats'][$key]);
+						$msg = 'Admin chat '.$matches[1].' deleted';
+					}
+					else
+					{
+						$msg = 'Admin chat '.$matches[1].' not found!';
+					}
+
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': '.$msg,
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/add_user (-?\\d+)$/', $update['message']['text'], $matches))
+				{
+					if(array_search($matches[1], $config['allowed_users']) === FALSE)
+					{
+						array_push($config['allowed_users'], $matches[1]);
+						$msg = 'New user  '.$matches[1].' added';
+					}
+					else
+					{
+						$msg = 'User '.$matches[1].' already exist!';
+					}
+					
+					foreach($config['admins_chats'] as &$chat_id)
+					{
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $chat_id,
+							'text' => $config['system_name'].': '.$msg,
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/del_user (-?\\d+)$/', $update['message']['text'], $matches))
 				{
 					if(($key = array_search($matches[1], $config['allowed_users'])) !== FALSE)
 					{
@@ -331,7 +418,7 @@ function http_save($url, $path)
 
 						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 					}
-					elseif(!preg_match('/\.torrent$/', $update['message']['document']['file_name']))
+					elseif(!preg_match('/\\.torrent$/', $update['message']['document']['file_name']))
 					{
 						$response = array(
 							'method' => 'sendMessage',
@@ -353,9 +440,9 @@ function http_save($url, $path)
 						if($response && $response['result']['file_path'])
 						{
 							$filename = $update['message']['document']['file_name'];
-							$filename = preg_replace('/\.torrent$/', '['.$update['message']['document']['file_unique_id'].'].torrent', $filename);
-							//$filename = preg_replace('/[^a-zA-Z0-9_\-. \[\]\(\)]/i', '', $filename);
-							$filename = preg_replace('/^[_\-. ]+/i', '', $filename);
+							$filename = preg_replace('/\\.torrent$/', '['.$update['message']['document']['file_unique_id'].'].torrent', $filename);
+							//$filename = preg_replace('/[^a-zA-Z0-9_\\-. \\[\\]\\(\\)]/i', '', $filename);
+							$filename = preg_replace('/^[_\\-. ]+/i', '', $filename);
 
 							http_save('https://api.telegram.org/file/bot'.$config['bot_token'].'/'.$response['result']['file_path'], $config['download_path'].'/'.$filename);
 
