@@ -421,7 +421,7 @@ function http_save($url, $path)
 						$response = array(
 							'method' => 'sendMessage',
 							'chat_id' => $update['message']['chat']['id'],
-							'text' => $config['system_name'].': download_path undefined!',
+							'text' => $config['system_name'].': download\_path undefined!',
 							'parse_mode' => 'Markdown'
 						);
 
