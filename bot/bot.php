@@ -261,6 +261,19 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_events_once (\\d+)$/', $update['message']['text'], $matches))
+				{
+					system('/opt/motion/on_cam_events_once.sh '.intval($matches[1]), $exit_code);
+					
+					$response = array(
+						'method' => 'sendMessage',
+						'chat_id' => $update['message']['chat']['id'],
+						'text' => $config['system_name'].': Camera once events enabled (EC: '.$exit_code.')',
+						'parse_mode' => 'Markdown'
+					);
+
+					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+				}
 				elseif(!empty($update['message']['text']) && preg_match('/^\\/iamadmin (\\w{5})$/', $update['message']['text'], $matches))
 				{
 					if(substr($config['bot_token'], -1, 5) === $matches[1])

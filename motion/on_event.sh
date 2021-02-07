@@ -7,7 +7,7 @@
     exit 0
   fi
 
-  [ "$4" != "force" -a -e /opt/motion/flags/cam_${2}_events.disable ] && exit 0
+  [ "${4}" != "force" -a -e /opt/motion/flags/cam_${2}_events.disable -a ! -e /opt/motion/flags/cam_${2}_event_${1}.once ] && exit 0
 
   . /opt/motion/config.conf
 
@@ -17,7 +17,9 @@
   if [ $dif -gt 10 ]; then
     echo $ut > /tmp/on_event_${1}_${2}.last
     dt=`date '+%d.%m.%Y %T'`
-    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=$3 at $dt&disable_notification=true"
+    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${3} at ${dt}&disable_notification=true"
+
+    [ -e /opt/motion/flags/cam_${2}_event_${1}.once ] && rm -f /opt/motion/flags/cam_${2}_event_${1}.once
   fi
 
 ) 9> /tmp/on_event_${1}_${2}.lock
