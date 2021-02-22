@@ -7,6 +7,7 @@ touch /opt/motion/flags/cam_${1}_event_start.once
 touch /opt/motion/flags/cam_${1}_event_stop.once
 touch /opt/motion/flags/cam_${1}_event_lost.once
 touch /opt/motion/flags/cam_${1}_event_found.once
-touch /opt/motion/flags/cam_${1}_event_save.once
+echo '5' >/opt/motion/flags/cam_${1}_event_save.once
+chmod a+rw /opt/motion/flags/cam_${1}_event_save.once
 
 exit 0
