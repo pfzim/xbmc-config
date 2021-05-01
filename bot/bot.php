@@ -209,6 +209,38 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_set (\\w+) (\\w+)$/', $update['message']['text'], $matches))
+				{
+					if($matches[1] === $config['system_name'])
+					{
+						system('sudo /opt/motion/on_flag_set.sh '.$matches[2], $exit_code);
+						
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $update['message']['chat']['id'],
+							'text' => $config['system_name'].': Flag setted (EC: '.$exit_code.')',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_clear (\\w+) (\\w+)$/', $update['message']['text'], $matches))
+				{
+					if($matches[1] === $config['system_name'])
+					{
+						system('sudo /opt/motion/on_flag_clear.sh '.$matches[2], $exit_code);
+						
+						$response = array(
+							'method' => 'sendMessage',
+							'chat_id' => $update['message']['chat']['id'],
+							'text' => $config['system_name'].': Flag cleared (EC: '.$exit_code.')',
+							'parse_mode' => 'Markdown'
+						);
+
+						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+					}
+				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/cam_record_enable')
 				{
 					system('sudo /opt/motion/on_cam_record_enable.sh', $exit_code);
