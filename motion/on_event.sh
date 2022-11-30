@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# ./on_event.sh event_id camera_id message_text force
+# ./on_event.sh event_id camera_id message_text force false
 
 (
   if ! flock -x -n 9 ; then
@@ -17,7 +17,8 @@
   if [ $dif -gt 10 ]; then
     echo $ut > /tmp/on_event_${1}_${2}.last
     dt=`date '+%d.%m.%Y %T'`
-    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${3} at ${dt}&disable_notification=true"
+    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${3} at ${dt}&disable_notification=${5}"
+    #curl -s -o /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${3} at ${dt}&disable_notification=${5}"
 
     [ -e /opt/motion/flags/cam_${2}_event_${1}.once ] && rm -f /opt/motion/flags/cam_${2}_event_${1}.once
   fi

@@ -28,7 +28,8 @@ trap "rm -f '${2}'" 1 2 3 8 9 15
 
     ic=`echo -e "\xF0\x9F\x92\xBE"`
     #wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${ic} Save photo ${1}"
-    curl -s -o /dev/null -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto?chat_id=${BOT_CHAT_ID}" -H "Content-Type: multipart/form-data" -F "photo=@${2}" -F "caption=${ic} Save photo ${2}"
+    #curl -s -o /dev/null -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto?chat_id=${BOT_CHAT_ID}" -H "Content-Type: multipart/form-data" -F "photo=@${2}" -F "caption=${ic} Save photo ${2}"
+    curl -s -o /dev/null -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendDocument?chat_id=${BOT_CHAT_ID}" -H "Content-Type: multipart/form-data" -F "document=@${2}" -F "caption=${ic} Save photo ${2}"
 
     # Manual snapshot required
     if [ -e /tmp/on_snapshot_camera${1}.conf ] ; then

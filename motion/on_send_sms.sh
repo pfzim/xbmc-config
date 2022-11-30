@@ -19,6 +19,7 @@
     echo $ut > /tmp/on_send_sms_${1}.last
     dt=`date '+%d.%m.%Y %T'`
     echo -ne "AT+CMGF=1\\r\\nAT+CMGS=\"${SMS_PHONE}\"\\r\\n${2}\\x1a" > /dev/ttyUSB0
+    #echo -ne "AT+CMGF=1\\nAT+CMGS=\"${SMS_PHONE}\"\\n${2}\\x1a" > /dev/ttyUSB0
   fi
 
 ) 9> /tmp/on_send_sms_${1}.lock
