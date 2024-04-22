@@ -110,7 +110,7 @@ function http_save($url, $path)
 						{
 							$response = array(
 								'method' => 'sendMessage',
-								'chat_id' => chat_id,
+								'chat_id' => $chat_id,
 								'text' => $config['system_name'].': System go down',
 								'parse_mode' => 'Markdown'
 							);
@@ -121,13 +121,34 @@ function http_save($url, $path)
 						system('sudo /usr/bin/shutdown -P +1');
 					}
 				}
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/reboot (\\w+)$/', $update['message']['text'], $matches))
+				{
+					if($matches[1] === $config['system_name'])
+					{
+						foreach($config['admins_chats'] as &$chat_id)
+						{
+							$response = array(
+								'method' => 'sendMessage',
+								'chat_id' => $chat_id,
+								'text' => $config['system_name'].': System go reboot',
+								'parse_mode' => 'Markdown'
+							);
+
+							http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+						}
+						
+						system('sudo /usr/bin/reboot');
+					}
+				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/ping')
 				{
+					$output = system('ip -json -6 addr show end0 scope global | jq -r \'.[0].addr_info[0].local\'');
+
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': OK',
-						'parse_mode' => 'Markdown'
+						'text' => $config['system_name'].': OK <code>'.htmlspecialchars($output).'</code>',
+						'parse_mode' => 'HTML'
 					);
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -293,7 +314,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_events_once (\\d+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/cam_events_once[_ ](\\d+)$/', $update['message']['text'], $matches))
 				{
 					system('/opt/motion/on_cam_events_once.sh '.intval($matches[1]), $exit_code);
 					
