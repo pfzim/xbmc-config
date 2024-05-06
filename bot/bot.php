@@ -147,7 +147,7 @@ function http_save($url, $path)
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': OK <code>'.htmlspecialchars($output).'</code>',
+						'text' => $config['system_name'].': OK <code>'.htmlspecialchars('['.$output.']').'</code>',
 						'parse_mode' => 'HTML'
 					);
 
