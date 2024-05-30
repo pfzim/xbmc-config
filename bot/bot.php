@@ -143,11 +143,12 @@ function http_save($url, $path)
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/ping')
 				{
 					$output = system('ip -json -6 addr show end0 scope global | jq -r \'.[0].addr_info[0].local\'');
+					$temp = round(intval(system('cat /sys/class/thermal/thermal_zone0/temp'))/1000, 1);
 
 					$response = array(
 						'method' => 'sendMessage',
 						'chat_id' => $update['message']['chat']['id'],
-						'text' => $config['system_name'].': OK <code>'.htmlspecialchars('['.$output.']').'</code>',
+						'text' => $config['system_name'].': OK '.$temp.'&#176;C <code>'.htmlspecialchars('['.$output.']').'</code> ',
 						'parse_mode' => 'HTML'
 					);
 
