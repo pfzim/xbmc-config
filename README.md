@@ -8,6 +8,8 @@ chmod a+rx i.sh
 sudo ./i.sh
 ```
 
+![screenshot](https://raw.githubusercontent.com/pfzim/other/master/screenshot_xbmc_config.png)
+
 # XBMC 13 post install configuration (old version)
 
 Boot XBMCbuntu, CTRL+ALT+F1, login and run:
