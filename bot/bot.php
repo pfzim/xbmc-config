@@ -231,7 +231,7 @@ function http_save($url, $path)
 
 					http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_set (\\w+) (\\w+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_set (\\w+) ([\\.\\w]+)$/', $update['message']['text'], $matches))
 				{
 					if($matches[1] === $config['system_name'])
 					{
@@ -247,7 +247,7 @@ function http_save($url, $path)
 						http(API_URL.'sendMessage', json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
 					}
 				}
-				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_clear (\\w+) (\\w+)$/', $update['message']['text'], $matches))
+				elseif(!empty($update['message']['text']) && preg_match('/^\\/flag_clear (\\w+) ([\\.\\w]+)$/', $update['message']['text'], $matches))
 				{
 					if($matches[1] === $config['system_name'])
 					{

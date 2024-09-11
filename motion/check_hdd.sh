@@ -2,11 +2,13 @@
 
 . /opt/motion/config.conf
 
-if [ ! -e /dev/ttyACM0 ] ; then
-  wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Zigbee coordinator device failed!"
+if [ ! -e /opt/motion/flags/flag_check_zigbee.disabled ] ; then
+  if [ ! -e /dev/ttyACM0 ] ; then
+    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Zigbee coordinator device failed!"
+  fi
 fi
 
-if [ ! -e /opt/motion/flags/flag_no_check_hdd.enabled ] ; then
+if [ ! -e /opt/motion/flags/flag_check_hdd.disabled ] ; then
   filecontent=`cat /mnt/data/mounted`
 
   if [ "$filecontent" != "mounted" ] ; then
@@ -16,7 +18,7 @@ if [ ! -e /opt/motion/flags/flag_no_check_hdd.enabled ] ; then
   fi
 fi
 
-if [ ! -e /opt/motion/flags/flag_no_check_motion_service.enabled ] ; then
+if [ ! -e /opt/motion/flags/flag_check_motion_service.disabled ] ; then
   motion_state=`systemctl show motion.service -p ActiveState`
   if [ "$motion_state" != "ActiveState=active" ] ; then
     wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Motion service is stopped"

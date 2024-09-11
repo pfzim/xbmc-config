@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# This shell script if placed in /etc/apcupsd
+# will be called by /etc/apcupsd/apccontrol when the    
+# UPS goes back on to the mains after a power failure.
+# We send an email message to root to notify him.
+#
+
+#HOSTNAME=`hostname`
+#MSG="$HOSTNAME UPS $1 Power has returned"
+#
+#(
+#   echo "Subject: $MSG"
+#   echo " "
+#   echo "$MSG"
+#   echo " "
+#   /usr/bin/apcaccess status
+#) | $APCUPSD_MAIL -s "$MSG" $SYSADMIN
+
+/opt/motion/send_event.sh -f -i ups "UPS Power returned"
+#/opt/motion/on_send_sms.sh ups_pwr_lost "UPS Lost connection" force
+
+exit 0
