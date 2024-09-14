@@ -142,7 +142,7 @@ function http_save($url, $path)
 				}
 				elseif(!empty($update['message']['text']) && $update['message']['text'] == '/ping')
 				{
-					$output = system('ip -json -6 addr show end0 scope global | jq -r \'.[0].addr_info[0].local\'');
+					$output = system('ip -json -6 addr show '.$config['network_interface'].' scope global | jq -r \'.[0].addr_info[0].local\'');
 					$temp = round(intval(system('cat /sys/class/thermal/thermal_zone0/temp'))/1000, 1);
 
 					$response = array(

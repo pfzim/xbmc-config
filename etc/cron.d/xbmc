@@ -2,4 +2,4 @@
 @reboot         xbmc php -f /home/xbmc/bot/bot.php -- --boot
 */1 * * * *     xbmc php -f /home/xbmc/bot/bot.php
 0 */6 * * *     xbmc /usr/sbin/rotate-byspace.sh -p /mnt/data/motion/bydays -s 30; /usr/sbin/move_by_dates.sh -s /mnt/data/motion -d /mnt/data/motion/bydays
-*/15 * * * *     xbmc /opt/motion/check_hdd.sh
+*/15 * * * *     xbmc /opt/motion/checks.sh

@@ -8,6 +8,21 @@ if [ ! -e /opt/motion/flags/flag_check_zigbee.disabled ] ; then
   fi
 fi
 
+if [ ! -e /opt/motion/flags/flag_check_internet.disabled ] ; then
+  cnt=`cat /tmp/no_internet.count` || cnt=0
+
+  if ! ping -c 1 8.8.8.8 >/dev/null 2>&1 ; then
+    if ! ping -c 1 77.88.8.8 >/dev/null 2>&1 ; then
+      cnt=$((cnt + 1))
+      if [ $cnt -gt 3 ] ; then
+        reboot
+      else
+        echo $cnt > /tmp/no_internet.count
+      fi
+    fi
+  fi
+fi
+
 if [ ! -e /opt/motion/flags/flag_check_hdd.disabled ] ; then
   filecontent=`cat /mnt/data/mounted`
 
