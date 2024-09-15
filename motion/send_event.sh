@@ -40,7 +40,7 @@ done
     exit 0
   fi
 
-  [ -e "/opt/motion/flags/flag_${event_id}.disabled" -a ! -e "/opt/motion/flags/flag_${event_id}.once" ] && exit 0
+  [ -e "/opt/motion/flags/flag_${event_id}.disable" -a ! -e "/opt/motion/flags/flag_${event_id}.once" ] && exit 0
 
   . /opt/motion/config.conf
 

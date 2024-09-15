@@ -11,7 +11,7 @@ trap "rm -f '${snapshot_file}'" 1 2 3 8 9 15
     exit 0
   fi
 
-  if [ -e /opt/motion/flags/flag_cam_${cam_id}_event_save.disabled -a ! \( -e /tmp/on_snapshot_camera${cam_id}.conf -o -e /opt/motion/flags/flag_cam_${cam_id}_event_save.once \) ] ; then
+  if [ -e /opt/motion/flags/flag_cam_${cam_id}_event_save.disable -a ! \( -e /tmp/on_snapshot_camera${cam_id}.conf -o -e /opt/motion/flags/flag_cam_${cam_id}_event_save.once \) ] ; then
     rm -f "${snapshot_file}"
     exit 0
   fi
@@ -38,13 +38,13 @@ trap "rm -f '${snapshot_file}'" 1 2 3 8 9 15
     if [ -e /tmp/on_snapshot_camera${cam_id}.conf ] ; then
       rm -f /tmp/on_snapshot_camera${cam_id}.conf
     # First 10 shots required
-    elif [ -e /opt/motion/flags/cam_${cam_id}_event_save.once ] ; then
-      shots=`cat /opt/motion/flags/cam_${cam_id}_event_save.once` || shots=10
+    elif [ -e /opt/motion/flags/flag_cam_${cam_id}_event_save.once ] ; then
+      shots=`cat /opt/motion/flags/flag_cam_${cam_id}_event_save.once` || shots=10
       shots=$((shots - 1))
       if [ $shots -gt 0 ] ; then
-        echo $shots > /opt/motion/flags/cam_${cam_id}_event_save.once
+        echo $shots > /opt/motion/flags/flag_cam_${cam_id}_event_save.once
       else
-        rm -f /opt/motion/flags/cam_${cam_id}_event_save.once
+        rm -f /opt/motion/flags/flag_cam_${cam_id}_event_save.once
       fi
     fi
   fi
