@@ -17,7 +17,7 @@
 #   /usr/bin/apcaccess status
 #) | $APCUPSD_MAIL -s "$MSG" $SYSADMIN
 
-/opt/motion/send_event.sh -f -i ups "UPS Change battery"
+/opt/motion/send_event.sh -f -i ups "UPS Battery need changing"
 #/opt/motion/on_send_sms.sh ups_pwr_lost "UPS Lost connection" force
 
 exit 0

@@ -1,0 +1,17 @@
+# systemctl daemon-reload
+# systemctl enable xbmc-onboot.service
+# systemctl start xbmc-onboot.service
+
+[Unit]
+Description="XBMC telegram bot on boot"
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=xbmc
+#ExecStartPre=-/usr/bin/sleep 10
+ExecStart=/usr/bin/php -f /opt/motion/bot/bot.php -- --boot
+
+[Install]
+WantedBy=multi-user.target

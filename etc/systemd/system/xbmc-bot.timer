@@ -1,0 +1,9 @@
+[Unit]
+Description="Run xbmc-bot.service 1min after boot and every 1 min"
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Unit=xbmc-bot.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+[Unit]
+Description="Run xbmc-checks.service every 15 min"
+
+[Timer]
+OnCalendar=*-*-* *:0/15:00
+Unit=xbmc-checks.service
+
+[Install]
+WantedBy=multi-user.target

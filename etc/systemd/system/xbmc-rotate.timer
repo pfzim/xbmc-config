@@ -1,0 +1,9 @@
+[Unit]
+Description="Run xbmc-rotate.service every 15 min"
+
+[Timer]
+OnCalendar=*-*-* 0/6:00:00
+Unit=xbmc-rotate.service
+
+[Install]
+WantedBy=multi-user.target

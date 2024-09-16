@@ -1,0 +1,11 @@
+# systemctl daemon-reload
+# systemctl enable xbmc-bot.timer
+# systemctl start xbmc-bot.timer
+
+[Unit]
+Description="XBMC telegram bot"
+
+[Service]
+Type=oneshot
+User=xbmc
+ExecStart=/usr/bin/php -f /opt/motion/bot/bot.php

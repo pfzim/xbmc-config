@@ -1,0 +1,11 @@
+# systemctl daemon-reload
+# systemctl enable xbmc-checks.timer
+# systemctl start xbmc-checks.timer
+
+[Unit]
+Description="XBMC monitoring checks"
+
+[Service]
+Type=oneshot
+User=xbmc
+ExecStart=/opt/motion/checks.sh

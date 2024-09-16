@@ -1,0 +1,12 @@
+# systemctl daemon-reload
+# systemctl enable xbmc-fdm.timer
+# systemctl start xbmc-fdm.timer
+
+[Unit]
+Description="XBMC fdm fetch"
+
+[Service]
+Type=oneshot
+User=xbmc
+ExecStartPre=-rm -f /home/xbmc/.fdm.lock
+ExecStart=fdm -q fetch
