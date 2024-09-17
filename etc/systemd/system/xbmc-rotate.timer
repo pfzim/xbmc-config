@@ -1,5 +1,5 @@
 [Unit]
-Description="Run xbmc-rotate.service every 15 min"
+Description="Run xbmc-rotate.service every 6 hours"
 
 [Timer]
 OnCalendar=*-*-* 0/6:00:00
