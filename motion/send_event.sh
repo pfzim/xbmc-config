@@ -59,7 +59,7 @@ done
 
     if [ -f /opt/motion/flags/flag_${event_id}.once ] ; then
       count=`cat /opt/motion/flags/flag_${event_id}.once` || count=5
-      count=$((shots - 1))
+      count=$((count - 1))
       if [ $count -gt 0 ] ; then
         echo $count > /opt/motion/flags/flag_${event_id}.once
       else
