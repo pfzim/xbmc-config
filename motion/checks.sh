@@ -6,6 +6,12 @@ if [ ! -e /opt/motion/flags/flag_check_zigbee.disable ] ; then
   if [ ! -e /dev/ttyACM0 ] ; then
     wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Zigbee coordinator device failed!"
   fi
+
+  /opt/motion/check_zigbee.py ${HA_TOKEN} ${ZIGBEE_ENTITY_ID}
+  exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Zigbee device unavailable!"
+  fi
 fi
 
 if [ ! -e /opt/motion/flags/flag_check_internet.disable ] ; then
