@@ -15,10 +15,10 @@ if [ ! -e /opt/motion/flags/flag_check_zigbee.disable ] ; then
 fi
 
 if [ ! -e /opt/motion/flags/flag_check_internet.disable ] ; then
-  cnt=`cat /tmp/no_internet.count` || cnt=0
+  [ -f /tmp/no_internet.count ] && cnt=`cat /tmp/no_internet.count` || cnt=0
 
-  if ! ping -c 1 8.8.8.8 >/dev/null 2>&1 ; then
-    if ! ping -c 1 77.88.8.8 >/dev/null 2>&1 ; then
+  if ! ping -c 1 dns.google >/dev/null 2>&1 ; then
+    if ! ping -c 1 dns.yandex.ru >/dev/null 2>&1 ; then
       cnt=$((cnt + 1))
       if [ $cnt -gt 3 ] ; then
         reboot
