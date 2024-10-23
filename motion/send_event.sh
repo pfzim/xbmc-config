@@ -50,7 +50,7 @@ done
   if [ "${method}" = "force" -o $dif -gt 10 ] ; then
     echo $ut > /tmp/send_event_${event_id}.last
     dt=`date '+%d.%m.%Y %T'`
-    if [ "${mgs_type}" = "sms" ] ; then
+    if [ "${msg_type}" = "sms" ] ; then
       echo -ne "AT+CMGF=1\\r\\nAT+CMGS=\"${SMS_PHONE}\"\\r\\n${message}\\x1a" > /dev/ttyUSB0
       #echo -ne "AT+CMGF=1\\nAT+CMGS=\"${SMS_PHONE}\"\\n${2}\\x1a" > /dev/ttyUSB0
     else
