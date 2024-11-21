@@ -9,3 +9,4 @@ Description="XBMC monitoring checks"
 Type=oneshot
 User=xbmc
 ExecStart=/opt/motion/checks.sh
+TimeoutStartSec=3600

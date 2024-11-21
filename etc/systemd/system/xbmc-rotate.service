@@ -10,3 +10,4 @@ Type=oneshot
 User=xbmc
 ExecStart=-/usr/sbin/rotate-byspace.sh -p /mnt/data/motion/bydays -s 30
 ExecStart=-/usr/sbin/move_by_dates.sh -s /mnt/data/motion -d /mnt/data/motion/bydays
+TimeoutStartSec=36000

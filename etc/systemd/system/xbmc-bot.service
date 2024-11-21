@@ -9,3 +9,4 @@ Description="XBMC telegram bot"
 Type=oneshot
 User=xbmc
 ExecStart=/usr/bin/php -f /opt/motion/bot/bot.php
+TimeoutStartSec=900

@@ -10,3 +10,4 @@ Type=oneshot
 User=xbmc
 ExecStartPre=-rm -f /home/xbmc/.fdm.lock
 ExecStart=fdm -q fetch
+TimeoutStartSec=900
