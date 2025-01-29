@@ -1,5 +1,7 @@
 #!/bin/sh
 
+umask 0011
+
 # cmd.sh camera_id
 
 #touch /opt/motion/flags/cam_${1}_event_motion.once

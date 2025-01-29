@@ -5,6 +5,8 @@ snapshot_file=$2
 
 trap "rm -f '${snapshot_file}'" 1 2 3 8 9 15
 
+umask 0011
+
 (
   if ! flock -x -n 9 ; then
     rm -f "${snapshot_file}"

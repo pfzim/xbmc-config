@@ -1,5 +1,7 @@
 #!/bin/sh
 
+umask 0011
+
 for fn in /etc/motion/conf.d/*.conf
 do
   if [ -f $fn ] ; then

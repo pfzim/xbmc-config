@@ -35,6 +35,8 @@ while [ $# -gt 0 ]; do
   esac
 done
 
+umask 0011
+
 (
   if ! flock -x -n 9 ; then
     exit 0

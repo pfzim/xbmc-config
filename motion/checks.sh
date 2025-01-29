@@ -2,6 +2,8 @@
 
 . /opt/motion/config.conf
 
+umask 0011
+
 if [ ! -e /opt/motion/flags/flag_check_zigbee.disable ] ; then
   if [ ! -e /dev/ttyACM0 ] ; then
     wget -q -O /dev/null "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${BOT_CHAT_ID}&text=${SYS_NAME} Zigbee coordinator device failed!"
