@@ -23,7 +23,7 @@ if [ ! -e /opt/motion/flags/flag_check_internet.disable ] ; then
     if ! ping -c 1 dns.yandex.ru >/dev/null 2>&1 ; then
       cnt=$((cnt + 1))
       if [ $cnt -gt 3 ] ; then
-        reboot
+        sudo reboot
       else
         echo $cnt > /tmp/no_internet.count
       fi
