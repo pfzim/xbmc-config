@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# ./on_event_f.sh -f -s -i event_id message_text
+# ./send_event.sh -f -s -i event_id message_text
 
 event_id='common'
 message=''

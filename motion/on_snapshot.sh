@@ -19,7 +19,7 @@ if [ $? -eq 0 ] ; then
   exit_code=0
 fi
 
-/opt/motion/send_snapshot_rtsp.sh "rtsp://10.1.2.1/cam/realmonitor?channel=1&subtype=0"
-/opt/motion/send_snapshot_rtsp.sh "rtsp://10.1.2.2/live/ch00_1"
+/opt/motion/send_snapshot_rtsp.sh -i rtsp_snapshot "rtsp://10.1.2.1/cam/realmonitor?channel=1&subtype=0"
+/opt/motion/send_snapshot_rtsp.sh -i rtsp_snapshot "rtsp://10.1.2.2/live/ch00_1"
 
 exit ${exit_code}
