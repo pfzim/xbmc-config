@@ -1,4 +1,4 @@
-# [Kodi 18.5 install and configure on fresh Arch Linux installation](https://github.com/pfzim/xbmc-config/)
+# [Installing and configuring Kodi on a fresh Arch Linux System](https://github.com/pfzim/xbmc-config/)
 
 This script is a comprehensive setup tool for configuring an Arch Linux system specifically tailored for use with Kodi (formerly XBMC). It provides a menu-driven interface to install and configure various components needed for a media center setup.
 
