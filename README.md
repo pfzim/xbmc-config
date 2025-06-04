@@ -54,6 +54,7 @@ sudo ./i-xbmcubuntu.sh
 # Installation
 
 Install Arch Linux following the [official wiki guide](https://wiki.archlinux.org/index.php/Installation_guide) ([alternative guide](https://pingvinus.ru/note/archlinux-install)).
+
 During installation, when running `pacstrap`, include additional packages (`wpa_supplicant` and `libnewt`) like this:
 ```
 pacstrap /mnt base linux linux-firmware intel-ucode wpa_supplicant libnewt lvm2 ntfs-3g git grub vim mc
