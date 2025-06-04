@@ -1,5 +1,7 @@
 # [Kodi 18.5 install and configure on fresh Arch Linux installation](https://github.com/pfzim/xbmc-config/)
 
+This script is a comprehensive setup tool for configuring an Arch Linux system specifically tailored for use with Kodi (formerly XBMC). It provides a menu-driven interface to install and configure various components needed for a media center setup.
+
 Install Arch Linux as described in official instruction
 Download `i.sh` script and run it
 ```
@@ -9,6 +11,36 @@ sudo ./i.sh
 ```
 
 ![screenshot](https://raw.githubusercontent.com/pfzim/other/master/screenshot_xbmc_config.png)
+
+## Script Overview
+
+The script performs the following main functions:
+
+1. **System Configuration**
+   - Sets timezone to Europe/Moscow
+   - Updates Arch Linux packages (`pacman -Syu`)
+   - Configures network interfaces (both wired and wireless)
+   - Installs and configures console tools (Midnight Commander, bash completion)
+   - Sets up Cyrillic support for console
+
+2. **Media Center Components**
+   - Installs Kodi along with its dependencies (XOrg, Fluxbox window manager, LXDM display manager)
+   - Configures autologin and automatic Kodi startup
+   - Sets up UPnP media sharing with MiniDLNA
+   - Configures Transmission torrent client with customizable download directories
+
+3. **Network Services**
+   - Configures SSH server with customizable port
+   - Sets up dynamic DNS (no-ip.com) for remote access
+   - Configures firewall rules with QoS for torrent traffic
+   - Implements email-based torrent control system
+
+4. **Additional Features**
+   - Bluetooth device configuration
+   - Web browser installation (Firefox or Chromium)
+   - On-screen keyboard setup
+   - CD/DVD burning software (Brasero)
+   - CCTV functionality with Motion
 
 # XBMC 13 post install configuration (old version)
 
@@ -21,8 +53,8 @@ sudo ./i-xbmcubuntu.sh
 
 # Installation
 
-Before you run this script you must install Arch linux as described in [official wiki](https://wiki.archlinux.org/index.php/Installation_guide) ([2](https://pingvinus.ru/note/archlinux-install)).
-At step when you run `pacstrap` install additional required tools `wpa_supplicant` and `libnewt` like this:
+Install Arch Linux following the [official wiki guide](https://wiki.archlinux.org/index.php/Installation_guide) ([alternative guide](https://pingvinus.ru/note/archlinux-install)).
+During installation, when running `pacstrap`, include additional packages (`wpa_supplicant` and `libnewt`) like this:
 ```
 pacstrap /mnt base linux linux-firmware intel-ucode wpa_supplicant libnewt lvm2 ntfs-3g git grub vim mc
 ```
@@ -122,3 +154,24 @@ Configure fonts (MS fonts w/o antialias)
 
 Install MiniDLNA UPnP server
 - Install and configure MiniDLNA to share directory with torrents
+
+## Technical Details
+
+The script uses:
+- `whiptail` for menu-driven interface
+- Systemd for service management
+- Networkd for network configuration (with optional NetworkManager)
+- Crontab for scheduled tasks
+- Various configuration files in `/etc` for persistent settings
+
+The script maintains a backup of all modified configuration files in a timestamped archive before making changes.
+
+## Notes
+
+- The script is designed to be run as root
+- It checks for required dependencies before execution
+- Each configuration section can be selected individually through the menu interface
+- The script provides verification prompts for critical configuration items
+- Network configuration requires internet access for package installation
+
+This script provides a complete solution for setting up a feature-rich media center based on Arch Linux and Kodi, with particular attention to Russian language support and remote management capabilities.
